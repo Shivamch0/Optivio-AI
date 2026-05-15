@@ -1,5 +1,6 @@
 import SocialButton from "../Button/SocialButton";
 import { useFormik } from "formik";
+import {registerUser} from "../../api/auth.api.js"
 
 function SignUpForm() {
   const { values, handleSubmit, handleChange } = useFormik({
@@ -8,8 +9,15 @@ function SignUpForm() {
       email: "",
       password: "",
     },
-    onSubmit: (values) => {
-      console.log(values);
+    onSubmit: async (values) => {
+      try {
+        const res = await registerUser(values);
+        console.log(res.data);
+        console.log(values)
+      } catch (error) {
+        console.log(error)
+      }
+
     },
   });
   return (
