@@ -27,12 +27,7 @@ const userSchema = new Schema(
       trim: true,
       minlength: 6,
     },
-
-    fullName: {
-      type: String,
-      trim: true,
-    },
-
+    
     companyName: {
       type: String,
       trim: true,
