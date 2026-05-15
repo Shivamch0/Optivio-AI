@@ -1,6 +1,19 @@
 import SocialButton from "../Button/SocialButton";
+import { useFormik } from 'formik'
 
 function LoginForm() {
+
+  const {  values , handleSubmit , handleChange } = useFormik({
+    initialValues : {
+      email : "",
+      password : ""
+    },
+    onSubmit : (values) =>{
+      console.log(values)
+    }
+
+  });
+
   return (
     <div className="bg-[#f8f8fb] px-10 py-12 flex flex-col justify-between">
       <div>
@@ -19,7 +32,7 @@ function LoginForm() {
           <div className="h-px bg-gray-300 flex-1"></div>
         </div>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm text-gray-600 mb-2">
               Work Email
@@ -28,6 +41,9 @@ function LoginForm() {
             <input
               type="email"
               placeholder="name@company.com"
+              name="email"
+              value={values.email}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -38,6 +54,9 @@ function LoginForm() {
             <input
               type="password"
               placeholder="••••••••"
+              name="password"
+              value={values.password}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
@@ -53,7 +72,10 @@ function LoginForm() {
             </button>
           </div>
 
-          <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition">
+          <button
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition"
+          >
             Sign In
           </button>
         </form>
