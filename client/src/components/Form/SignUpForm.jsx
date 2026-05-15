@@ -5,15 +5,16 @@ import {registerUser} from "../../api/auth.api.js"
 function SignUpForm() {
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
-      name: "",
+      userName: "",
       email: "",
       password: "",
     },
     onSubmit: async (values) => {
       try {
+        console.log(values);
         const res = await registerUser(values);
         console.log(res.data);
-        console.log(values)
+        console.log("user created")
       } catch (error) {
         console.log(error)
       }
@@ -45,8 +46,8 @@ function SignUpForm() {
             <input
               type="text"
               placeholder="john"
-              name="name"
-              value={values.name}
+              name="userName"
+              value={values.userName}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
             />

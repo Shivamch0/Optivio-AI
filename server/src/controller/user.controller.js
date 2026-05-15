@@ -52,7 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
   user.refreshToken = refreshToken;
   await user.save({ validateBeforeSave: false });
 
-  const createdUser = await user
+  const createdUser = await User
     .findById(user._id)
     .select(" -password -refreshToken");
   if (!createdUser) {
