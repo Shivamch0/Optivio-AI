@@ -2,7 +2,10 @@ import SocialButton from "../Button/SocialButton";
 import { useFormik } from "formik";
 import {registerUser} from "../../api/auth.api.js"
 
+import { useNavigate } from "react-router-dom";
+
 function SignUpForm() {
+  const navigate = useNavigate();
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
       userName: "",
@@ -21,6 +24,10 @@ function SignUpForm() {
 
     },
   });
+
+   const handleNavigateLogin = () => {
+     navigate("/login");
+   };
   return (
     <div className="bg-[#f8f8fb] px-10 py-12 flex flex-col justify-between">
       <div>
@@ -98,7 +105,10 @@ function SignUpForm() {
 
         <p className="text-center text-gray-500 mt-6">
           Already have an account?{" "}
-          <span className="text-purple-600 font-semibold cursor-pointer">
+          <span
+            onClick={handleNavigateLogin}
+            className="text-purple-600 font-semibold cursor-pointer"
+          >
             Sign In
           </span>
         </p>

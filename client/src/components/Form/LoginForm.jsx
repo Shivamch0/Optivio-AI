@@ -1,18 +1,32 @@
 import SocialButton from "../Button/SocialButton";
 import { useFormik } from 'formik'
+import { loginUser } from '../../api/auth.api.js';
+
+import { useNavigate } from 'react-router-dom'
 
 function LoginForm() {
+  const navigate = useNavigate()
 
   const {  values , handleSubmit , handleChange } = useFormik({
     initialValues : {
       email : "",
       password : ""
     },
-    onSubmit : (values) =>{
-      console.log(values)
+    onSubmit : async (values) =>{
+      try {
+        console.log(values)
+        const res = await loginUser(values);
+        console.log(res.data)
+      } catch (error) {
+        console.log(error)
+      }
     }
 
   });
+
+  const handleSignup = () => {
+    navigate("/login")
+  }
 
   return (
     <div className="bg-[#f8f8fb] px-10 py-12 flex flex-col justify-between">
@@ -82,7 +96,10 @@ function LoginForm() {
 
         <p className="text-center text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <span className="text-purple-600 font-semibold cursor-pointer">
+          <span
+            onClick={handleSignup}
+            className="text-purple-600 font-semibold cursor-pointer"
+          >
             Get Started
           </span>
         </p>
