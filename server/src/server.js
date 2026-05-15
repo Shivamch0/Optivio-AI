@@ -13,5 +13,5 @@ connectDB()
     })
 })
 .catch((error) => {
-    console.log('Server Failed during connecting Database...' , error)
+    console.log('Server Failed during connecting Database...' , error) 
 })
