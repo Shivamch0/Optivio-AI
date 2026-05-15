@@ -1,6 +1,7 @@
-export default function Button({ children, className = "", full = false }) {
+export default function Button({ children, className = "", full = false , fn }) {
   return (
     <button
+    onClick={fn}
       className={`
         ${full ? "w-full" : ""}
         bg-purple-700
