@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 function SignUpForm() {
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
+      name: "",
       email: "",
       password: "",
     },
@@ -14,7 +15,7 @@ function SignUpForm() {
   return (
     <div className="bg-[#f8f8fb] px-10 py-12 flex flex-col justify-between">
       <div>
-        <h2 className="text-4xl font-bold text-[#111827]">Welcome Back</h2>
+        <h2 className="text-4xl font-bold text-[#111827]">Let's Start</h2>
 
         <p className="text-gray-500 mt-2">Access your precision SEO engine.</p>
 
@@ -30,6 +31,19 @@ function SignUpForm() {
         </div>
 
         <form className="space-y-5" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">Username</label>
+
+            <input
+              type="text"
+              placeholder="john"
+              name="name"
+              value={values.name}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+
           <div>
             <label className="block text-sm text-gray-600 mb-2">
               Work Email
@@ -61,26 +75,22 @@ function SignUpForm() {
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-gray-500">
               <input type="checkbox" />
-              Remember me
+              Terms & Conditions
             </label>
-
-            <button type="button" className="text-purple-600 font-medium">
-              Forgot password?
-            </button>
           </div>
 
           <button
             type="submit"
             className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition"
           >
-            Sign In
+            Sign Up
           </button>
         </form>
 
         <p className="text-center text-gray-500 mt-6">
-          Don’t have an account?{" "}
+          Already have an account?{" "}
           <span className="text-purple-600 font-semibold cursor-pointer">
-            Get Started
+            Sign In
           </span>
         </p>
       </div>
