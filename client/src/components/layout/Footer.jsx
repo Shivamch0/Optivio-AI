@@ -1,5 +1,4 @@
-// components/layout/Footer.jsx
-
+import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200">
@@ -15,26 +14,23 @@ export default function Footer() {
           </p>
 
           <div className="flex gap-5 text-2xl">
-            <a
-              href="#"
+            <Link
               className="text-gray-500 hover:text-purple-700 transition"
             >
               🌐
-            </a>
+            </Link>
 
-            <a
-              href="#"
+            <Link
               className="text-gray-500 hover:text-purple-700 transition"
             >
               ✉️
-            </a>
+            </Link>
 
-            <a
-              href="#"
+            <Link
               className="text-gray-500 hover:text-purple-700 transition"
             >
               📢
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -44,16 +40,16 @@ export default function Footer() {
 
           <ul className="space-y-4 text-gray-600">
             <li>
-              <a href="#">SEO Analyzer</a>
+              <Link>SEO Analyzer</Link>
             </li>
             <li>
-              <a href="#">Keyword Research</a>
+              <Link>Keyword Research</Link>
             </li>
             <li>
-              <a href="#">AI Insights</a>
+              <Link>AI Insights</Link>
             </li>
             <li>
-              <a href="#">Backlink Monitor</a>
+              <Link>Backlink Monitor</Link>
             </li>
           </ul>
         </div>
@@ -63,16 +59,16 @@ export default function Footer() {
 
           <ul className="space-y-4 text-gray-600">
             <li>
-              <a href="#">About Us</a>
+              <Link>About Us</Link>
             </li>
             <li>
-              <a href="#">Blog</a>
+              <Link>Blog</Link>
             </li>
             <li>
-              <a href="#">Careers</a>
+              <Link>Careers</Link>
             </li>
             <li>
-              <a href="#">Security</a>
+              <Link>Security</Link>
             </li>
           </ul>
         </div>
@@ -82,13 +78,13 @@ export default function Footer() {
 
           <ul className="space-y-4 text-gray-600">
             <li>
-              <a href="#">Privacy Policy</a>
+              <Link>Privacy Policy</Link>
             </li>
             <li>
-              <a href="#">Terms of Service</a>
+              <Link>Terms of Service</Link>
             </li>
             <li>
-              <a href="#">API Status</a>
+              <Link>API Status</Link>
             </li>
           </ul>
         </div>
@@ -102,8 +98,8 @@ export default function Footer() {
           </p>
 
           <div className="flex gap-6 text-sm text-gray-500">
-            <a href="#">English (US)</a>
-            <a href="#">EUR (€)</a>
+            <Link>English (US)</Link>
+            <Link>EUR (€)</Link>
           </div>
         </div>
       </div>
