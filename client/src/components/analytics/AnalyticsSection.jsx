@@ -1,4 +1,3 @@
-// components/analytics/AnalyticsSection.jsx
 
 import Button from "../common/Button";
 

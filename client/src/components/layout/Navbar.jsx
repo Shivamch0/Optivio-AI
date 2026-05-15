@@ -8,7 +8,7 @@ export default function Navbar() {
           <h1 className="text-2xl font-bold">RankPilot AI</h1>
 
           <div className="hidden md:flex gap-6">
-            {["Features", "Solutions", "Pricing", "Docs"].map((item) => (
+            {["Features", "Solutions","Docs"].map((item) => (
               <a
                 key={item}
                 href="#"
