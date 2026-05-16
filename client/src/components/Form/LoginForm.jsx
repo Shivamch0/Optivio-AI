@@ -16,7 +16,8 @@ function LoginForm() {
       try {
         console.log(values)
         const res = await loginUser(values);
-        console.log(res.data)
+        console.log(res)
+        navigate("/dashboard")
       } catch (error) {
         console.log(error)
       }
@@ -25,7 +26,7 @@ function LoginForm() {
   });
 
   const handleSignup = () => {
-    navigate("/login")
+    navigate("/signup")
   }
 
   return (

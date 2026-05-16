@@ -26,12 +26,12 @@ const getCurrentUser = async () => {
 }
 
 const changePassword = async (data) => {
-    const res = await api.put("/users/change-password" , data);
+    const res = await api.patch("/users/change-password" , data);
     return res.data;
 }
 
 const changeDetails = async (data) => {
-    const res = await api.put("/users/update-details" , data)
+    const res = await api.patch("/users/update-details" , data)
     return res.data
 }
 

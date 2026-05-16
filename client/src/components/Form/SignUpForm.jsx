@@ -16,8 +16,9 @@ function SignUpForm() {
       try {
         console.log(values);
         const res = await registerUser(values);
-        console.log(res.data);
+        console.log(res);
         console.log("user created")
+        navigate("/dashboard");
       } catch (error) {
         console.log(error)
       }
