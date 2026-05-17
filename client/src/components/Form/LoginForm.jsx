@@ -1,134 +1,152 @@
+import { useState } from "react";
+import { useFormik } from "formik";
+import { useNavigate } from "react-router-dom";
 import SocialButton from "../Button/SocialButton";
-import { useFormik } from 'formik'
-import { loginUser } from '../../api/auth.api.js';
-
-import { useNavigate } from 'react-router-dom'
+import { loginUser } from "../../api/auth.api.js";
 
 function LoginForm() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
-  const {  values , handleSubmit , handleChange } = useFormik({
-    initialValues : {
-      email : "",
-      password : ""
+  const { values, handleSubmit, handleChange, isSubmitting } = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
     },
-    onSubmit : async (values) =>{
-      try {
-        const res = await loginUser(values);
-        navigate("/dashboard")
-      } catch (error) {
-        console.log(error)
-      }
-    }
+    onSubmit: async (formValues, { setSubmitting }) => {
+      setError("");
 
+      try {
+        await loginUser(formValues);
+        navigate("/dashboard");
+      } catch (err) {
+        setError(
+          err?.response?.data?.message ||
+            "We could not sign you in. Check your details and try again.",
+        );
+      } finally {
+        setSubmitting(false);
+      }
+    },
   });
 
-  const handleSignup = () => {
-    navigate("/signup")
-  }
-
   return (
-    <div className="bg-[#f8f8fb] px-10 py-12 flex flex-col justify-between">
+    <section className="flex min-h-[720px] flex-col justify-between bg-[#f7f8fb] px-6 py-8 sm:px-10 lg:px-12">
       <div>
-        <h2 className="text-4xl font-bold text-[#111827]">Welcome Back</h2>
-
-        <p className="text-gray-500 mt-2">Access your precision SEO engine.</p>
-
-        <div className="mt-8 space-y-4">
-          <SocialButton text="Continue with Google" />
-          <SocialButton text="Continue with SSO" />
+        <div className="mb-10 lg:hidden">
+          <p className="text-lg font-bold text-[#111827]">Optivio AI</p>
         </div>
 
-        <div className="flex items-center gap-3 my-8">
-          <div className="h-px bg-gray-300 flex-1"></div>
-          <span className="text-gray-400 text-sm">OR EMAIL</span>
-          <div className="h-px bg-gray-300 flex-1"></div>
+        <div className="max-w-md">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#6d5dfc]">
+            Welcome back
+          </p>
+          <h2 className="mt-3 text-3xl font-bold text-[#111827] sm:text-4xl">
+            Continue your search growth.
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-[#667085]">
+            Access your dashboards, keyword movement, audits, and AI-backed SEO
+            priorities.
+          </p>
         </div>
+
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <SocialButton text="Google" icon="G" />
+          <SocialButton text="SSO" icon="S" />
+        </div>
+
+        <div className="my-8 flex items-center gap-3">
+          <div className="h-px flex-1 bg-[#d9dde7]" />
+          <span className="text-xs font-semibold tracking-wide text-[#98a2b3]">
+            OR EMAIL
+          </span>
+          <div className="h-px flex-1 bg-[#d9dde7]" />
+        </div>
+
+        {error && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm text-gray-600 mb-2">
-              Work Email
+            <label className="mb-2 block text-sm font-medium text-[#344054]">
+              Work email
             </label>
-
             <input
               type="email"
               placeholder="name@company.com"
               name="email"
               value={values.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
+              className="h-12 w-full rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#6d5dfc] focus:ring-4 focus:ring-[#6d5dfc]/15"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Password</label>
-
+            <label className="mb-2 block text-sm font-medium text-[#344054]">
+              Password
+            </label>
             <input
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               name="password"
               value={values.password}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500"
+              className="h-12 w-full rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#6d5dfc] focus:ring-4 focus:ring-[#6d5dfc]/15"
+              required
             />
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 text-gray-500">
-              <input type="checkbox" />
+          <div className="flex items-center justify-between gap-4 text-sm">
+            <label className="flex items-center gap-2 text-[#667085]">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-[#d0d5dd] accent-[#6d5dfc]"
+              />
               Remember me
             </label>
 
-            <button type="button" className="text-purple-600 font-medium">
+            <button
+              type="button"
+              className="font-semibold text-[#5a4ee8] hover:text-[#4338ca]"
+            >
               Forgot password?
             </button>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-semibold transition"
+            disabled={isSubmitting}
+            className="h-12 w-full rounded-lg bg-[#6d5dfc] px-4 text-sm font-bold text-white shadow-lg shadow-[#6d5dfc]/20 transition hover:bg-[#5a4ee8] disabled:cursor-not-allowed disabled:bg-[#a9a3f8]"
           >
-            Sign In
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <p className="text-center text-gray-500 mt-6">
-          Don’t have an account?{" "}
-          <span
-            onClick={handleSignup}
-            className="text-purple-600 font-semibold cursor-pointer"
+        <p className="mt-7 text-center text-sm text-[#667085]">
+          Do not have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            className="font-semibold text-[#5a4ee8] hover:text-[#4338ca]"
           >
-            Get Started
-          </span>
+            Get started
+          </button>
         </p>
       </div>
 
-      <div className="mt-10">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-              ✦
-            </div>
-
-            <div>
-              <p className="font-semibold text-gray-800">AI Insight</p>
-
-              <p className="text-gray-500 text-sm mt-1">
-                Precision targeting can increase ROI by up to 42%.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center gap-6 text-xs text-gray-400 mt-8">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Contact Support</span>
-        </div>
+      <div className="mt-10 rounded-lg border border-[#e4e7ec] bg-white p-4">
+        <p className="text-sm font-semibold text-[#101828]">AI insight</p>
+        <p className="mt-1 text-sm leading-6 text-[#667085]">
+          High-intent keywords are easiest to act on when audits and analytics
+          stay connected.
+        </p>
       </div>
-    </div>
+    </section>
   );
 }
 
-export default LoginForm
+export default LoginForm;
