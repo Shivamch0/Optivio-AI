@@ -70,6 +70,131 @@ const checkBrokenLinks = async (links) => {
   return results.filter((result) => result.status === "fulfilled" && result.value).length;
 };
 
+const fetchPageSpeedMetrics = async (targetUrl) => {
+  const apiUrl = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
+  apiUrl.searchParams.set("url", targetUrl);
+  apiUrl.searchParams.set("category", "performance");
+  apiUrl.searchParams.set("category", "seo");
+  apiUrl.searchParams.set("strategy", "mobile");
+
+  if (process.env.PAGESPEED_API_KEY) {
+    apiUrl.searchParams.set("key", process.env.PAGESPEED_API_KEY);
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+
+  try {
+    const response = await fetch(apiUrl, { signal: controller.signal });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const audits = data?.lighthouseResult?.audits || {};
+    const categories = data?.lighthouseResult?.categories || {};
+
+    return {
+      pageSpeedScore: Math.round((categories.performance?.score || 0) * 100),
+      seoCategoryScore: Math.round((categories.seo?.score || 0) * 100),
+      performanceMetrics: {
+        firstContentfulPaint: Number(((audits["first-contentful-paint"]?.numericValue || 0) / 1000).toFixed(2)),
+        largestContentfulPaint: Number(((audits["largest-contentful-paint"]?.numericValue || 0) / 1000).toFixed(2)),
+        cumulativeLayoutShift: Number((audits["cumulative-layout-shift"]?.numericValue || 0).toFixed(2)),
+      },
+      mobileFriendly:
+        audits.viewport?.score === 1 &&
+        audits["font-size"]?.score !== 0 &&
+        audits["tap-targets"]?.score !== 0,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const generateProviderRecommendations = async (audit, website) => {
+  const prompt = `You are an SEO strategist. Return 4 concise, high-impact recommendations for ${website.domain}. Use this JSON audit: ${JSON.stringify({
+    seoScore: audit.seoScore,
+    pageSpeedScore: audit.pageSpeedScore,
+    titleTag: audit.titleTag,
+    metaDescription: audit.metaDescription,
+    h1TagsCount: audit.h1TagsCount,
+    imageAltCoverage: audit.imageAltCoverage,
+    brokenLinksCount: audit.brokenLinksCount,
+    keywordDensity: audit.keywordDensity,
+    technicalIssues: audit.technicalIssues,
+  })}`;
+
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      const response = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+          input: prompt,
+          max_output_tokens: 450,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const text =
+          data.output_text ||
+          data.output
+            ?.flatMap((item) => item.content || [])
+            .map((item) => item.text)
+            .filter(Boolean)
+            .join("\n");
+
+        if (text) {
+          return text
+            .split(/\n|(?<=\.)\s+(?=\d\.|-)/)
+            .map((item) => item.replace(/^[-*\d.\s]+/, "").trim())
+            .filter(Boolean)
+            .slice(0, 4);
+        }
+      }
+    } catch {
+      // Fall back to Gemini or heuristic recommendations.
+    }
+  }
+
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-1.5-flash"}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          }),
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          return text
+            .split(/\n|(?<=\.)\s+(?=\d\.|-)/)
+            .map((item) => item.replace(/^[-*\d.\s]+/, "").trim())
+            .filter(Boolean)
+            .slice(0, 4);
+        }
+      }
+    } catch {
+      // Fall back to heuristic recommendations.
+    }
+  }
+
+  return audit.aiRecommendations;
+};
+
 const getKeywordDensity = (text) => {
   const stopWords = new Set([
     "the",
@@ -148,7 +273,10 @@ const createHeuristicAudit = async (domain) => {
     const linkScore = internalLinksCount >= 5 ? 12 : Math.min(internalLinksCount * 2, 10);
     const speedScore = loadTime < 1.5 ? 16 : loadTime < 3 ? 11 : 6;
     const seoScore = Math.min(100, titleScore + metaScore + headingScore + imageScore + linkScore + speedScore + 8);
-    const pageSpeedScore = Math.max(35, Math.min(98, Math.round(100 - loadTime * 14 - html.length / 120000)));
+    const pageSpeed = await fetchPageSpeedMetrics(response.url || targetUrl);
+    const pageSpeedScore =
+      pageSpeed?.pageSpeedScore ||
+      Math.max(35, Math.min(98, Math.round(100 - loadTime * 14 - html.length / 120000)));
 
     const technicalIssues = [];
     if (!titleTag) technicalIssues.push({ issue: "Missing page title", severity: "high", solution: "Add a clear title tag between 20 and 65 characters." });
@@ -166,7 +294,7 @@ const createHeuristicAudit = async (domain) => {
       h1TagsCount,
       internalLinksCount,
       externalLinksCount,
-      mobileFriendly: Boolean(getMetaContent(html, "viewport")),
+      mobileFriendly: pageSpeed?.mobileFriendly ?? Boolean(getMetaContent(html, "viewport")),
       sslEnabled: response.url?.startsWith("https://") ?? true,
       titleTag,
       metaDescription,
@@ -177,7 +305,7 @@ const createHeuristicAudit = async (domain) => {
         imageAltCoverage < 80 ? "Fix image alt text on priority pages to improve accessibility and image SEO." : "Build content clusters around the strongest repeated topics.",
         internalLinksCount < 5 ? "Add internal links from supporting pages to the main conversion page." : "Use internal links to push authority toward pages close to ranking.",
       ],
-      performanceMetrics: {
+      performanceMetrics: pageSpeed?.performanceMetrics || {
         firstContentfulPaint: Number(Math.max(0.6, loadTime * 0.45).toFixed(2)),
         largestContentfulPaint: Number(Math.max(1.2, loadTime * 0.85).toFixed(2)),
         cumulativeLayoutShift: Number((html.length % 12 / 100).toFixed(2)),
@@ -248,6 +376,41 @@ const createAudit = async (domain) => {
   } catch {
     return createMockAudit(domain);
   }
+};
+
+const compareCompetitors = async (website, userId) => {
+  const competitors = website.competitorWebsites || [];
+  const ownLatest = await SEOReport.findOne({
+    website: website._id,
+    analyzedBy: userId,
+  })
+    .sort({ analyzedAt: -1 })
+    .lean();
+
+  const competitorResults = await Promise.all(
+    competitors.slice(0, 5).map(async (domain) => {
+      const normalizedDomain = normalizeDomain(domain);
+      const audit = await createAudit(normalizedDomain);
+      return {
+        domain: normalizedDomain,
+        seoScore: audit.seoScore,
+        pageSpeedScore: audit.pageSpeedScore,
+        brokenLinksCount: audit.brokenLinksCount,
+        keywordDensity: audit.keywordDensity,
+        technicalIssuesCount: audit.technicalIssues.length,
+      };
+    }),
+  );
+
+  return {
+    own: {
+      domain: website.domain,
+      seoScore: ownLatest?.seoScore || website.seoScore || 0,
+      pageSpeedScore: ownLatest?.pageSpeedScore || website.pageSpeed || 0,
+      technicalIssuesCount: ownLatest?.technicalIssues?.length || website.technicalIssues?.length || 0,
+    },
+    competitors: competitorResults,
+  };
 };
 
 const getWebsites = asyncHandler(async (req, res) => {
@@ -366,6 +529,7 @@ const runSeoAudit = asyncHandler(async (req, res) => {
   }
 
   const audit = await createAudit(website.domain);
+  audit.aiRecommendations = await generateProviderRecommendations(audit, website);
 
   const report = await SEOReport.create({
     website: website._id,
@@ -429,4 +593,103 @@ const getSeoReports = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, reports, "SEO reports fetched successfully"));
 });
 
-export { getWebsites, createWebsite, updateWebsite, deleteWebsite, runSeoAudit, getSeoReports };
+const getCompetitorAnalysis = asyncHandler(async (req, res) => {
+  const { websiteId } = req.params;
+  const website = await Website.findOne({ _id: websiteId, user: req.user._id });
+
+  if (!website) {
+    throw new ApiError(404, "Website not found");
+  }
+
+  if (!website.competitorWebsites?.length) {
+    throw new ApiError(400, "Add competitor websites before running comparison");
+  }
+
+  const analysis = await compareCompetitors(website, req.user._id);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, analysis, "Competitor analysis completed"));
+});
+
+const exportSeoReport = asyncHandler(async (req, res) => {
+  const { websiteId } = req.params;
+  const { format = "json" } = req.query;
+  const website = await Website.findOne({ _id: websiteId, user: req.user._id }).lean();
+
+  if (!website) {
+    throw new ApiError(404, "Website not found");
+  }
+
+  const reports = await SEOReport.find({
+    website: website._id,
+    analyzedBy: req.user._id,
+  })
+    .sort({ analyzedAt: -1 })
+    .limit(20)
+    .lean();
+
+  if (format === "csv") {
+    const rows = [
+      ["analyzedAt", "seoScore", "pageSpeedScore", "h1TagsCount", "brokenLinksCount", "imageAltCoverage"],
+      ...reports.map((report) => [
+        report.analyzedAt,
+        report.seoScore,
+        report.pageSpeedScore,
+        report.h1TagsCount,
+        report.brokenLinksCount,
+        report.imageAltCoverage,
+      ]),
+    ];
+
+    res.setHeader("content-type", "text/csv");
+    res.setHeader("content-disposition", `attachment; filename="${website.domain}-seo-report.csv"`);
+    return res.status(200).send(rows.map((row) => row.join(",")).join("\n"));
+  }
+
+  if (format === "html" || format === "pdf") {
+    const latest = reports[0];
+    const html = `<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>${website.domain} SEO report</title></head>
+<body style="font-family:Arial,sans-serif;margin:40px;color:#101828">
+<h1>${website.websiteName} SEO report</h1>
+<p>${website.domain}</p>
+<h2>Latest snapshot</h2>
+<p>SEO score: ${latest?.seoScore || 0}/100</p>
+<p>Page speed: ${latest?.pageSpeedScore || 0}/100</p>
+<p>Broken links: ${latest?.brokenLinksCount || 0}</p>
+<h2>Recommendations</h2>
+<ul>${(latest?.aiRecommendations || website.aiRecommendations || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+<h2>Audit history</h2>
+<table border="1" cellpadding="8" cellspacing="0">
+<tr><th>Date</th><th>SEO</th><th>Speed</th><th>Issues</th></tr>
+${reports
+  .map(
+    (report) =>
+      `<tr><td>${new Date(report.analyzedAt).toLocaleString()}</td><td>${report.seoScore}</td><td>${report.pageSpeedScore}</td><td>${report.technicalIssues?.length || 0}</td></tr>`,
+  )
+  .join("")}
+</table>
+<script>window.print()</script>
+</body></html>`;
+
+    res.setHeader("content-type", "text/html");
+    return res.status(200).send(html);
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { website, reports }, "SEO report exported"));
+});
+
+export {
+  getWebsites,
+  createWebsite,
+  updateWebsite,
+  deleteWebsite,
+  runSeoAudit,
+  getSeoReports,
+  getCompetitorAnalysis,
+  exportSeoReport,
+};

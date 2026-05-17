@@ -4,6 +4,8 @@ import { logoutUser } from "../api/auth.api.js";
 import {
   createWebsite,
   deleteWebsite,
+  getCompetitorAnalysis,
+  getReportExportUrl,
   getSeoReports,
   getWebsites,
   runSeoAudit,
@@ -13,6 +15,7 @@ import {
   analyzeKeyword,
   deleteKeyword,
   getKeywords,
+  getKeywordSuggestions,
 } from "../api/keyword.api.js";
 import {
   deleteNotification,
@@ -65,11 +68,15 @@ export default function Dashboard({ user }) {
   const [reports, setReports] = useState([]);
   const [keywords, setKeywords] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [keywordSuggestions, setKeywordSuggestions] = useState([]);
+  const [competitorAnalysis, setCompetitorAnalysis] = useState(null);
   const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
   const [auditRunning, setAuditRunning] = useState(false);
   const [savingWebsite, setSavingWebsite] = useState(false);
   const [keywordRunning, setKeywordRunning] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [competitorsLoading, setCompetitorsLoading] = useState(false);
 
   const selectedWebsite = useMemo(
     () => websites.find((website) => website._id === selectedWebsiteId),
@@ -132,6 +139,8 @@ export default function Dashboard({ user }) {
         ]);
         setReports(reportRes.data);
         setKeywords(keywordRes.data);
+        setKeywordSuggestions([]);
+        setCompetitorAnalysis(null);
       } catch (error) {
         setMessage(getErrorMessage(error, "Could not load website details."));
       }
@@ -209,6 +218,23 @@ export default function Dashboard({ user }) {
     }
   };
 
+  const handleStatusChange = async (event) => {
+    if (!selectedWebsiteId) return;
+    const nextStatus = event.target.value;
+
+    try {
+      const res = await updateWebsite(selectedWebsiteId, { status: nextStatus });
+      setWebsites((current) =>
+        current.map((website) =>
+          website._id === selectedWebsiteId ? res.data : website,
+        ),
+      );
+      setMessage(`Website marked ${nextStatus}.`);
+    } catch (error) {
+      setMessage(getErrorMessage(error, "Could not update website status."));
+    }
+  };
+
   const handleAudit = async () => {
     if (!selectedWebsiteId) {
       setMessage("Create a website before running an audit.");
@@ -268,6 +294,34 @@ export default function Dashboard({ user }) {
     }
   };
 
+  const handleKeywordSuggestions = async () => {
+    if (!selectedWebsiteId || !keywordInput.trim()) return;
+    setSuggestionsLoading(true);
+
+    try {
+      const res = await getKeywordSuggestions(selectedWebsiteId, keywordInput);
+      setKeywordSuggestions(res.data);
+    } catch (error) {
+      setMessage(getErrorMessage(error, "Could not load keyword suggestions."));
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  };
+
+  const handleCompetitorAnalysis = async () => {
+    if (!selectedWebsiteId) return;
+    setCompetitorsLoading(true);
+
+    try {
+      const res = await getCompetitorAnalysis(selectedWebsiteId);
+      setCompetitorAnalysis(res.data);
+    } catch (error) {
+      setMessage(getErrorMessage(error, "Could not run competitor analysis."));
+    } finally {
+      setCompetitorsLoading(false);
+    }
+  };
+
   const handleDeleteKeyword = async (keywordId) => {
     try {
       await deleteKeyword(keywordId);
@@ -314,6 +368,14 @@ export default function Dashboard({ user }) {
               <p className="text-xs text-[#667085]">Search intelligence</p>
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/profile")}
+            className="rounded-lg border border-[#d0d5dd] bg-white px-4 py-2 text-sm font-semibold text-[#344054] transition hover:bg-[#f8fafc]"
+          >
+            Profile
+          </button>
 
           <button
             type="button"
@@ -423,6 +485,19 @@ export default function Dashboard({ user }) {
                   />
                 </div>
               </div>
+
+              <label className="block text-sm font-medium text-[#344054]">
+                Status
+                <select
+                  value={selectedWebsite?.status || "active"}
+                  onChange={handleStatusChange}
+                  disabled={!selectedWebsiteId}
+                  className="mt-2 h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 text-sm outline-none"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </label>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-[#344054]">
@@ -646,6 +721,33 @@ export default function Dashboard({ user }) {
               <span className="text-sm font-bold text-[#344054]">{reports.length}</span>
             </div>
 
+            {selectedWebsiteId && (
+              <div className="mt-4 flex flex-wrap gap-3">
+                <a
+                  href={getReportExportUrl(selectedWebsiteId, "html")}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-xs font-bold text-[#344054]"
+                >
+                  Print/PDF
+                </a>
+                <a
+                  href={getReportExportUrl(selectedWebsiteId, "csv")}
+                  className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-xs font-bold text-[#344054]"
+                >
+                  CSV
+                </a>
+                <a
+                  href={getReportExportUrl(selectedWebsiteId, "json")}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-xs font-bold text-[#344054]"
+                >
+                  JSON
+                </a>
+              </div>
+            )}
+
             <div className="mt-6 space-y-3">
               {reports.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-[#d0d5dd] p-6 text-center text-sm text-[#667085]">
@@ -703,7 +805,35 @@ export default function Dashboard({ user }) {
               >
                 {keywordRunning ? "Analyzing..." : "Analyze"}
               </button>
+              <button
+                type="button"
+                onClick={handleKeywordSuggestions}
+                disabled={suggestionsLoading || !selectedWebsiteId || !keywordInput.trim()}
+                className="h-11 rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm font-bold text-[#344054] transition hover:bg-[#f8fafc] disabled:cursor-not-allowed disabled:text-[#98a2b3]"
+              >
+                {suggestionsLoading ? "Finding..." : "Ideas"}
+              </button>
             </form>
+
+            {keywordSuggestions.length > 0 && (
+              <div className="mt-4 rounded-lg border border-[#e4e7ec] bg-[#f8fafc] p-4">
+                <p className="text-xs font-bold uppercase text-[#667085]">
+                  Suggestions
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {keywordSuggestions.slice(0, 8).map((suggestion) => (
+                    <button
+                      type="button"
+                      key={suggestion.keyword}
+                      onClick={() => setKeywordInput(suggestion.keyword)}
+                      className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#344054]"
+                    >
+                      {suggestion.keyword} · {suggestion.searchVolume.toLocaleString()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 space-y-3">
               {keywords.length === 0 ? (
@@ -741,6 +871,56 @@ export default function Dashboard({ user }) {
               )}
             </div>
           </div>
+        </section>
+
+        <section className="mt-6 rounded-xl border border-[#dde3ee] bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-lg font-bold">Competitor analysis</h2>
+              <p className="mt-1 text-sm text-[#667085]">
+                Compare your latest score against competitors saved in Website manager.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCompetitorAnalysis}
+              disabled={competitorsLoading || !selectedWebsite?.competitorWebsites?.length}
+              className="h-10 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#1d2939] disabled:cursor-not-allowed disabled:bg-[#98a2b3]"
+            >
+              {competitorsLoading ? "Comparing..." : "Compare"}
+            </button>
+          </div>
+
+          {!selectedWebsite?.competitorWebsites?.length && (
+            <p className="mt-5 rounded-lg border border-dashed border-[#d0d5dd] p-5 text-sm text-[#667085]">
+              Add competitor domains above, then run comparison.
+            </p>
+          )}
+
+          {competitorAnalysis && (
+            <div className="mt-6 grid gap-3 lg:grid-cols-3">
+              <div className="rounded-lg border border-[#c7d2fe] bg-[#eef2ff] p-4">
+                <p className="text-xs font-bold uppercase text-[#5a4ee8]">You</p>
+                <p className="mt-2 font-bold">{competitorAnalysis.own.domain}</p>
+                <p className="mt-3 text-2xl font-bold">
+                  {competitorAnalysis.own.seoScore}/100
+                </p>
+              </div>
+              {competitorAnalysis.competitors.map((competitor) => (
+                <div key={competitor.domain} className="rounded-lg border border-[#e4e7ec] p-4">
+                  <p className="text-xs font-bold uppercase text-[#667085]">
+                    Competitor
+                  </p>
+                  <p className="mt-2 font-bold">{competitor.domain}</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-[#667085]">
+                    <span>SEO {competitor.seoScore}</span>
+                    <span>Speed {competitor.pageSpeedScore}</span>
+                    <span>Issues {competitor.technicalIssuesCount}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mt-6 rounded-xl border border-[#dde3ee] bg-white p-6 shadow-sm">

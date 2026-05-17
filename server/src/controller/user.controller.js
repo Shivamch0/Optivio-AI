@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -219,9 +220,16 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { userName, email, companyName, avatar } = req.body;
+  const { userName, email, companyName, avatar, teamName, subscriptionPlan } = req.body;
 
-  if (!userName && !email && companyName === undefined && avatar === undefined) {
+  if (
+    !userName &&
+    !email &&
+    companyName === undefined &&
+    avatar === undefined &&
+    teamName === undefined &&
+    subscriptionPlan === undefined
+  ) {
     throw new ApiError(400, "At least one account detail is required");
   }
 
@@ -231,6 +239,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   if (email?.trim()) updates.email = email.trim().toLowerCase();
   if (companyName !== undefined) updates.companyName = companyName.trim();
   if (avatar !== undefined) updates.avatar = avatar.trim();
+  if (teamName !== undefined) updates.teamName = teamName.trim();
+  if (subscriptionPlan !== undefined) updates.subscriptionPlan = subscriptionPlan;
 
   if (updates.userName || updates.email) {
     const duplicateUser = await User.findOne({
@@ -263,6 +273,73 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     );
 });
 
+const requestPasswordReset = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email?.trim()) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  const user = await User.findOne({ email: email.trim().toLowerCase() });
+
+  if (user) {
+    const plainToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = crypto
+      .createHash("sha256")
+      .update(plainToken)
+      .digest("hex");
+    user.passwordResetExpires = new Date(Date.now() + 1000 * 60 * 20);
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          resetToken:
+            process.env.NODE_ENV === "production" ? undefined : plainToken,
+        },
+        "Password reset token generated. In production this should be emailed.",
+      ),
+    );
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "If the account exists, reset instructions were generated."));
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    throw new ApiError(400, "Reset token and new password are required");
+  }
+
+  if (newPassword.length < 6) {
+    throw new ApiError(400, "New password must be at least 6 characters long");
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() },
+  });
+
+  if (!user) {
+    throw new ApiError(400, "Reset token is invalid or expired");
+  }
+
+  user.password = newPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.refreshToken = undefined;
+  await user.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password reset successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -271,4 +348,6 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   updateAccountDetails,
+  requestPasswordReset,
+  resetPassword,
 };

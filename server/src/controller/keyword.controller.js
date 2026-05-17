@@ -38,6 +38,28 @@ const buildKeywordMetrics = (keyword, website) => {
   };
 };
 
+const buildKeywordSuggestions = (keyword, website) => {
+  const base = keyword.trim().toLowerCase();
+  const modifiers = [
+    "strategy",
+    "tools",
+    "pricing",
+    "examples",
+    "checklist",
+    "agency",
+    "software",
+    "audit",
+  ];
+
+  return modifiers.map((modifier) => {
+    const phrase = `${base} ${modifier}`;
+    return {
+      keyword: phrase,
+      ...buildKeywordMetrics(phrase, website),
+    };
+  });
+};
+
 const assertWebsiteAccess = async (websiteId, userId) => {
   const website = await Website.findOne({ _id: websiteId, user: userId });
 
@@ -136,4 +158,19 @@ const deleteKeyword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { keywordId }, "Keyword deleted successfully"));
 });
 
-export { analyzeKeyword, deleteKeyword, getKeywords };
+const getKeywordSuggestions = asyncHandler(async (req, res) => {
+  const { websiteId, keyword } = req.query;
+
+  if (!websiteId || !keyword?.trim()) {
+    throw new ApiError(400, "Website id and keyword are required");
+  }
+
+  const website = await assertWebsiteAccess(websiteId, req.user._id);
+  const suggestions = buildKeywordSuggestions(keyword, website);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, suggestions, "Keyword suggestions fetched"));
+});
+
+export { analyzeKeyword, deleteKeyword, getKeywords, getKeywordSuggestions };

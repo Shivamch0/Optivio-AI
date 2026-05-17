@@ -43,6 +43,18 @@ const userSchema = new Schema(
       default: "",
     },
 
+    subscriptionPlan: {
+      type: String,
+      enum: ["free", "pro", "enterprise"],
+      default: "free",
+    },
+
+    teamName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     websites: [
       {
         type: Schema.Types.ObjectId,
@@ -58,6 +70,14 @@ const userSchema = new Schema(
 
     refreshToken: {
       type: String,
+    },
+
+    passwordResetToken: {
+      type: String,
+    },
+
+    passwordResetExpires: {
+      type: Date,
     },
   },
   { timestamps: true }

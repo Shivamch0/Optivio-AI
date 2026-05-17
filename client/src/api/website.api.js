@@ -30,4 +30,21 @@ const getSeoReports = async (websiteId) => {
   return res.data;
 };
 
-export { createWebsite, deleteWebsite, getSeoReports, getWebsites, runSeoAudit, updateWebsite };
+const getCompetitorAnalysis = async (websiteId) => {
+  const res = await api.get(`/websites/${websiteId}/competitors`);
+  return res.data;
+};
+
+const getReportExportUrl = (websiteId, format = "html") =>
+  `${api.defaults.baseURL}/websites/${websiteId}/export?format=${format}`;
+
+export {
+  createWebsite,
+  deleteWebsite,
+  getCompetitorAnalysis,
+  getReportExportUrl,
+  getSeoReports,
+  getWebsites,
+  runSeoAudit,
+  updateWebsite,
+};

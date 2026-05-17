@@ -4,6 +4,7 @@ import {
   analyzeKeyword,
   deleteKeyword,
   getKeywords,
+  getKeywordSuggestions,
 } from "../controller/keyword.controller.js";
 
 const router = express.Router();
@@ -11,6 +12,7 @@ const router = express.Router();
 router.use(verifyJWT);
 
 router.route("/").get(getKeywords).post(analyzeKeyword);
+router.route("/suggestions").get(getKeywordSuggestions);
 router.route("/:keywordId").delete(deleteKeyword);
 
 export default router;

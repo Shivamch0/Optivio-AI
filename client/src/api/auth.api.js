@@ -30,9 +30,19 @@ const changePassword = async (data) => {
     return res.data;
 }
 
+const requestPasswordReset = async (data) => {
+    const res = await api.post("/users/forgot-password", data);
+    return res.data;
+}
+
+const resetPassword = async (data) => {
+    const res = await api.post("/users/reset-password", data);
+    return res.data;
+}
+
 const changeDetails = async (data) => {
     const res = await api.patch("/users/update-details" , data)
     return res.data
 }
 
-export {registerUser , loginUser , logoutUser , refreshToken , getCurrentUser , changeDetails , changePassword}
+export {registerUser , loginUser , logoutUser , refreshToken , getCurrentUser , changeDetails , changePassword, requestPasswordReset, resetPassword}
