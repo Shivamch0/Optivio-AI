@@ -14,9 +14,7 @@ function LoginForm() {
     },
     onSubmit : async (values) =>{
       try {
-        console.log(values)
         const res = await loginUser(values);
-        console.log(res)
         navigate("/dashboard")
       } catch (error) {
         console.log(error)
