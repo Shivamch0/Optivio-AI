@@ -2,23 +2,70 @@ import { useState } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
 import SocialButton from "../Button/SocialButton";
+import Toast from "../common/Toast";
 import { registerUser } from "../../api/auth.api.js";
+
+const validateSignUp = (values) => {
+  const errors = {};
+
+  if (!values.userName.trim()) {
+    errors.userName = "Username is required";
+  } else if (values.userName.trim().length < 3) {
+    errors.userName = "Username must be at least 3 characters";
+  }
+
+  if (!values.email.trim()) {
+    errors.email = "Work email is required";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  if (!values.password) {
+    errors.password = "Password is required";
+  } else if (values.password.length < 6) {
+    errors.password = "Password must be at least 6 characters";
+  }
+
+  if (!values.acceptTerms) {
+    errors.acceptTerms = "Accept the terms to continue";
+  }
+
+  return errors;
+};
 
 function SignUpForm() {
   const navigate = useNavigate();
   const [error, setError] = useState("");
 
-  const { values, handleSubmit, handleChange, isSubmitting } = useFormik({
+  const {
+    values,
+    errors,
+    touched,
+    dirty,
+    handleSubmit,
+    handleChange,
+    handleBlur,
+    isSubmitting,
+    isValid,
+  } = useFormik({
     initialValues: {
       userName: "",
       email: "",
       password: "",
+      acceptTerms: false,
     },
+    validate: validateSignUp,
+    validateOnMount: true,
     onSubmit: async (formValues, { setSubmitting }) => {
       setError("");
 
       try {
-        await registerUser(formValues);
+        const payload = {
+          userName: formValues.userName,
+          email: formValues.email,
+          password: formValues.password,
+        };
+        await registerUser(payload);
         navigate("/dashboard");
       } catch (err) {
         setError(
@@ -64,11 +111,7 @@ function SignUpForm() {
           <div className="h-px flex-1 bg-[#d9dde7]" />
         </div>
 
-        {error && (
-          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        <Toast message={error} onClose={() => setError("")} />
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
@@ -81,9 +124,15 @@ function SignUpForm() {
               name="userName"
               value={values.userName}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="h-12 w-full rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#6d5dfc] focus:ring-4 focus:ring-[#6d5dfc]/15"
               required
             />
+            {errors.userName && touched.userName && (
+              <p className="mt-1 text-xs font-semibold text-red-600">
+                {errors.userName}
+              </p>
+            )}
           </div>
 
           <div>
@@ -96,9 +145,15 @@ function SignUpForm() {
               name="email"
               value={values.email}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="h-12 w-full rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#6d5dfc] focus:ring-4 focus:ring-[#6d5dfc]/15"
               required
             />
+            {errors.email && touched.email && (
+              <p className="mt-1 text-xs font-semibold text-red-600">
+                {errors.email}
+              </p>
+            )}
           </div>
 
           <div>
@@ -111,24 +166,40 @@ function SignUpForm() {
               name="password"
               value={values.password}
               onChange={handleChange}
+              onBlur={handleBlur}
               className="h-12 w-full rounded-lg border border-[#d0d5dd] bg-white px-4 text-sm text-[#101828] outline-none transition placeholder:text-[#98a2b3] focus:border-[#6d5dfc] focus:ring-4 focus:ring-[#6d5dfc]/15"
               minLength={6}
               required
             />
+            {errors.password && touched.password && (
+              <p className="mt-1 text-xs font-semibold text-red-600">
+                {errors.password}
+              </p>
+            )}
           </div>
 
           <label className="flex items-start gap-3 text-sm leading-5 text-[#667085]">
             <input
               type="checkbox"
+              name="acceptTerms"
+              checked={values.acceptTerms}
+              onChange={handleChange}
+              onBlur={handleBlur}
               className="mt-0.5 h-4 w-4 rounded border-[#d0d5dd] accent-[#6d5dfc]"
-              required
             />
-            I agree to the terms, privacy policy, and product updates.
+            <span>
+              I agree to the terms, privacy policy, and product updates.
+              {errors.acceptTerms && touched.acceptTerms && (
+                <span className="mt-1 block text-xs font-semibold text-red-600">
+                  {errors.acceptTerms}
+                </span>
+              )}
+            </span>
           </label>
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isValid || !dirty}
             className="h-12 w-full rounded-lg bg-[#6d5dfc] px-4 text-sm font-bold text-white shadow-lg shadow-[#6d5dfc]/20 transition hover:bg-[#5a4ee8] disabled:cursor-not-allowed disabled:bg-[#a9a3f8]"
           >
             {isSubmitting ? "Creating account..." : "Create account"}
