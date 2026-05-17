@@ -18,7 +18,6 @@ const websiteSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
       lowercase: true,
     },
 
@@ -106,5 +105,7 @@ const websiteSchema = new Schema(
   },
   { timestamps: true }
 );
+
+websiteSchema.index({ user: 1, domain: 1 }, { unique: true });
 
 export const Website = mongoose.model("Website", websiteSchema);

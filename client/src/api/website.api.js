@@ -10,6 +10,16 @@ const createWebsite = async (data) => {
   return res.data;
 };
 
+const updateWebsite = async (websiteId, data) => {
+  const res = await api.patch(`/websites/${websiteId}`, data);
+  return res.data;
+};
+
+const deleteWebsite = async (websiteId) => {
+  const res = await api.delete(`/websites/${websiteId}`);
+  return res.data;
+};
+
 const runSeoAudit = async (websiteId) => {
   const res = await api.post(`/websites/${websiteId}/audits`);
   return res.data;
@@ -20,4 +30,4 @@ const getSeoReports = async (websiteId) => {
   return res.data;
 };
 
-export { createWebsite, getSeoReports, getWebsites, runSeoAudit };
+export { createWebsite, deleteWebsite, getSeoReports, getWebsites, runSeoAudit, updateWebsite };
