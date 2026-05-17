@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { requestPasswordReset, resetPassword } from "../../api/auth.api.js";
 
 const getErrorMessage = (error, fallback) =>
@@ -7,8 +7,9 @@ const getErrorMessage = (error, fallback) =>
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState(searchParams.get("token") || "");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
 

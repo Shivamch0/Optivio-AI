@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { User } from "../model/user.model.js";
+import { sendPasswordResetEmail } from "../services/email.service.js";
 
 const cookieOptions = {
   httpOnly: true,
@@ -41,6 +42,23 @@ const sanitizeUser = (user) => {
   delete plainUser.refreshToken;
 
   return plainUser;
+};
+
+const createSessionResponse = async (res, userId, statusCode, message) => {
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userId);
+  const user = await User.findById(userId).select("-password -refreshToken");
+
+  return res
+    .status(statusCode)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(
+      new ApiResponse(
+        statusCode,
+        { user, accessToken, refreshToken },
+        message,
+      ),
+    );
 };
 
 const registerUser = asyncHandler(async (req, res) => {
@@ -290,15 +308,24 @@ const requestPasswordReset = asyncHandler(async (req, res) => {
       .digest("hex");
     user.passwordResetExpires = new Date(Date.now() + 1000 * 60 * 20);
     await user.save({ validateBeforeSave: false });
+    const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/forgot-password?token=${plainToken}`;
+    const emailResult = await sendPasswordResetEmail({
+      to: user.email,
+      resetUrl,
+      token: plainToken,
+    });
 
     return res.status(200).json(
       new ApiResponse(
         200,
         {
-          resetToken:
-            process.env.NODE_ENV === "production" ? undefined : plainToken,
+          delivered: emailResult.delivered,
+          provider: emailResult.provider,
+          resetToken: process.env.NODE_ENV === "production" ? undefined : plainToken,
         },
-        "Password reset token generated. In production this should be emailed.",
+        emailResult.delivered
+          ? "Password reset email sent"
+          : "Password reset token generated. Configure email provider for delivery.",
       ),
     );
   }
@@ -306,6 +333,63 @@ const requestPasswordReset = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "If the account exists, reset instructions were generated."));
+});
+
+const googleAuth = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    throw new ApiError(501, "Google login is not configured");
+  }
+
+  if (!idToken) {
+    throw new ApiError(400, "Google ID token is required");
+  }
+
+  const response = await fetch(
+    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+  );
+
+  if (!response.ok) {
+    throw new ApiError(401, "Invalid Google token");
+  }
+
+  const profile = await response.json();
+
+  if (profile.aud !== process.env.GOOGLE_CLIENT_ID || !profile.email_verified) {
+    throw new ApiError(401, "Google token audience or email verification failed");
+  }
+
+  const email = profile.email.toLowerCase();
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    const baseUserName = (profile.name || email.split("@")[0])
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "")
+      .slice(0, 20);
+    const suffix = Date.now().toString().slice(-5);
+
+    user = await User.create({
+      userName: `${baseUserName || "google"}${suffix}`,
+      email,
+      password: crypto.randomBytes(24).toString("hex"),
+      avatar: profile.picture || "",
+      companyName: profile.hd || "",
+    });
+  }
+
+  return createSessionResponse(res, user._id, 200, "Google login successful");
+});
+
+const getSsoLogin = asyncHandler(async (req, res) => {
+  if (!process.env.SSO_LOGIN_URL) {
+    throw new ApiError(501, "SSO login is not configured");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { url: process.env.SSO_LOGIN_URL }, "SSO login URL fetched"));
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
@@ -350,4 +434,6 @@ export {
   updateAccountDetails,
   requestPasswordReset,
   resetPassword,
+  googleAuth,
+  getSsoLogin,
 };

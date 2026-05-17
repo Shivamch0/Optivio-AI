@@ -6,6 +6,7 @@ import { SEOReport } from "../model/seoReport.model.js";
 import { User } from "../model/user.model.js";
 import { Keyword } from "../model/keyword.model.js";
 import { Notification } from "../model/notification.model.js";
+import { createSimplePdf } from "../services/pdf.service.js";
 
 const normalizeDomain = (domain) => {
   const value = domain?.trim().toLowerCase();
@@ -73,8 +74,8 @@ const checkBrokenLinks = async (links) => {
 const fetchPageSpeedMetrics = async (targetUrl) => {
   const apiUrl = new URL("https://www.googleapis.com/pagespeedonline/v5/runPagespeed");
   apiUrl.searchParams.set("url", targetUrl);
-  apiUrl.searchParams.set("category", "performance");
-  apiUrl.searchParams.set("category", "seo");
+  apiUrl.searchParams.append("category", "performance");
+  apiUrl.searchParams.append("category", "seo");
   apiUrl.searchParams.set("strategy", "mobile");
 
   if (process.env.PAGESPEED_API_KEY) {
@@ -647,7 +648,26 @@ const exportSeoReport = asyncHandler(async (req, res) => {
     return res.status(200).send(rows.map((row) => row.join(",")).join("\n"));
   }
 
-  if (format === "html" || format === "pdf") {
+  if (format === "pdf") {
+    const latest = reports[0];
+    const pdf = createSimplePdf({
+      title: `${website.websiteName} SEO report`,
+      lines: [
+        `Domain: ${website.domain}`,
+        `SEO score: ${latest?.seoScore || 0}/100`,
+        `Page speed: ${latest?.pageSpeedScore || 0}/100`,
+        `Broken links: ${latest?.brokenLinksCount || 0}`,
+        `Reports included: ${reports.length}`,
+        ...((latest?.aiRecommendations || website.aiRecommendations || []).slice(0, 8)),
+      ],
+    });
+
+    res.setHeader("content-type", "application/pdf");
+    res.setHeader("content-disposition", `attachment; filename="${website.domain}-seo-report.pdf"`);
+    return res.status(200).send(pdf);
+  }
+
+  if (format === "html") {
     const latest = reports[0];
     const html = `<!doctype html>
 <html>

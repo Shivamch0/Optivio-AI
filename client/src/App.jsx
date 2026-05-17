@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/Auth/LoginPage";
 import ForgotPasswordPage from "./pages/Auth/ForgotPasswordPage";
 import SignUpPage from "./pages/Auth/SignUpPage";
+import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
@@ -28,6 +29,14 @@ function App() {
         element={
           <ProtectedRoute>
             {(user) => <Profile user={user} />}
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            {() => <Admin />}
           </ProtectedRoute>
         }
       />

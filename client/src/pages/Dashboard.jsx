@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { logoutUser } from "../api/auth.api.js";
 import {
   createWebsite,
@@ -85,6 +94,15 @@ export default function Dashboard({ user }) {
 
   const latestReport = reports[0];
   const unreadCount = notifications.filter((item) => !item.isRead).length;
+  const trendData = reports
+    .slice(0, 8)
+    .reverse()
+    .map((report) => ({
+      date: formatDate(report.analyzedAt).split(",")[0],
+      seo: report.seoScore,
+      speed: report.pageSpeedScore,
+      issues: report.technicalIssues?.length || 0,
+    }));
 
   const stats = [
     ["SEO Score", selectedWebsite?.seoScore || 0, "Quality"],
@@ -377,6 +395,16 @@ export default function Dashboard({ user }) {
             Profile
           </button>
 
+          {user?.role === "admin" && (
+            <button
+              type="button"
+              onClick={() => navigate("/admin")}
+              className="rounded-lg border border-[#d0d5dd] bg-white px-4 py-2 text-sm font-semibold text-[#344054] transition hover:bg-[#f8fafc]"
+            >
+              Admin
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleLogout}
@@ -646,27 +674,24 @@ export default function Dashboard({ user }) {
               </span>
             </div>
 
-            <div className="mt-8 flex h-60 items-end gap-3">
-              {[
-                ["SEO", selectedWebsite?.seoScore || 0],
-                ["Speed", selectedWebsite?.pageSpeed || 0],
-                ["Mobile", selectedWebsite?.mobileOptimizationScore || 0],
-                ["Authority", selectedWebsite?.domainAuthority || 0],
-                ["Alt", latestReport?.imageAltCoverage || 0],
-                ["Links", Math.min(latestReport?.internalLinksCount || 0, 100)],
-              ].map(([label, height]) => (
-                <div key={label} className="flex flex-1 flex-col justify-end gap-2">
-                  <div
-                    className="flex items-end rounded-t-lg bg-[#eef2ff]"
-                    style={{ height: `${Math.max(height, 8)}%` }}
-                  >
-                    <div className="h-2/3 w-full rounded-t-lg bg-[#6d5dfc]" />
-                  </div>
-                  <p className="text-center text-xs font-semibold text-[#667085]">
-                    {label}
-                  </p>
+            <div className="mt-8 h-60">
+              {trendData.length > 1 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData}>
+                    <CartesianGrid stroke="#e4e7ec" strokeDasharray="3 3" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="seo" stroke="#6d5dfc" strokeWidth={3} dot={false} />
+                    <Line type="monotone" dataKey="speed" stroke="#10b981" strokeWidth={3} dot={false} />
+                    <Line type="monotone" dataKey="issues" stroke="#f97316" strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-[#d0d5dd] text-sm text-[#667085]">
+                  Run two audits to see trend charts.
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -724,12 +749,10 @@ export default function Dashboard({ user }) {
             {selectedWebsiteId && (
               <div className="mt-4 flex flex-wrap gap-3">
                 <a
-                  href={getReportExportUrl(selectedWebsiteId, "html")}
-                  target="_blank"
-                  rel="noreferrer"
+                  href={getReportExportUrl(selectedWebsiteId, "pdf")}
                   className="rounded-lg border border-[#d0d5dd] px-3 py-2 text-xs font-bold text-[#344054]"
                 >
-                  Print/PDF
+                  PDF
                 </a>
                 <a
                   href={getReportExportUrl(selectedWebsiteId, "csv")}
