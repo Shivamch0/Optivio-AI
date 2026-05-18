@@ -238,15 +238,14 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { userName, email, companyName, avatar, teamName, subscriptionPlan } = req.body;
+  const { userName, email, companyName, avatar, teamName } = req.body;
 
   if (
     !userName &&
     !email &&
     companyName === undefined &&
     avatar === undefined &&
-    teamName === undefined &&
-    subscriptionPlan === undefined
+    teamName === undefined
   ) {
     throw new ApiError(400, "At least one account detail is required");
   }
@@ -258,7 +257,6 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   if (companyName !== undefined) updates.companyName = companyName.trim();
   if (avatar !== undefined) updates.avatar = avatar.trim();
   if (teamName !== undefined) updates.teamName = teamName.trim();
-  if (subscriptionPlan !== undefined) updates.subscriptionPlan = subscriptionPlan;
 
   if (updates.userName || updates.email) {
     const duplicateUser = await User.findOne({

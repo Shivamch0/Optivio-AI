@@ -16,7 +16,10 @@ const createCheckout = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Choose pro or enterprise plan");
   }
 
-  let checkoutUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/profile?checkout=mock-${plan}`;
+  const allowMockBilling = process.env.NODE_ENV !== "production" && process.env.ENABLE_MOCK_BILLING !== "false";
+  let checkoutUrl = allowMockBilling
+    ? `${process.env.CLIENT_URL || "http://localhost:5173"}/profile?checkout=mock-${plan}`
+    : "";
   let provider = "mock";
   let providerSessionId = "";
 
@@ -45,6 +48,12 @@ const createCheckout = asyncHandler(async (req, res) => {
       provider = "stripe";
       providerSessionId = data.id;
     }
+  } else if (!allowMockBilling) {
+    throw new ApiError(503, "Billing provider is not configured");
+  }
+
+  if (!checkoutUrl) {
+    throw new ApiError(502, "Could not create checkout session");
   }
 
   const event = await BillingEvent.create({

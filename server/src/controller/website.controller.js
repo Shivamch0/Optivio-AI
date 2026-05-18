@@ -1,6 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import dns from "dns/promises";
+import net from "net";
 import { Website } from "../model/website.model.js";
 import { SEOReport } from "../model/seoReport.model.js";
 import { User } from "../model/user.model.js";
@@ -20,6 +22,55 @@ const normalizeDomain = (domain) => {
     return value.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
   }
 };
+
+const isValidDomain = (domain) =>
+  /^(?=.{1,253}$)(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/i.test(domain);
+
+const isPrivateIp = (ip) => {
+  if (net.isIPv4(ip)) {
+    const [a, b] = ip.split(".").map(Number);
+    return (
+      a === 10 ||
+      a === 127 ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a === 0
+    );
+  }
+
+  if (net.isIPv6(ip)) {
+    const value = ip.toLowerCase();
+    return (
+      value === "::1" ||
+      value.startsWith("fc") ||
+      value.startsWith("fd") ||
+      value.startsWith("fe80:") ||
+      value === "::"
+    );
+  }
+
+  return true;
+};
+
+const assertPublicDomain = async (domain) => {
+  if (!isValidDomain(domain)) {
+    throw new ApiError(400, "Enter a valid public domain, for example example.com");
+  }
+
+  const records = await dns.lookup(domain, { all: true });
+  if (!records.length || records.some((record) => isPrivateIp(record.address))) {
+    throw new ApiError(400, "Private, local, or unreachable domains cannot be audited");
+  }
+};
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 const pickSeverity = (score) => {
   if (score >= 80) return "low";
@@ -229,6 +280,7 @@ const getKeywordDensity = (text) => {
 };
 
 const createHeuristicAudit = async (domain) => {
+  await assertPublicDomain(domain);
   const targetUrl = `https://${domain}`;
   const startedAt = Date.now();
   const controller = new AbortController();
@@ -374,8 +426,11 @@ const createMockAudit = (domain) => {
 const createAudit = async (domain) => {
   try {
     return await createHeuristicAudit(domain);
-  } catch {
-    return createMockAudit(domain);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(422, "Audit failed. Confirm the website is public and reachable over HTTPS.");
   }
 };
 
@@ -391,15 +446,27 @@ const compareCompetitors = async (website, userId) => {
   const competitorResults = await Promise.all(
     competitors.slice(0, 5).map(async (domain) => {
       const normalizedDomain = normalizeDomain(domain);
-      const audit = await createAudit(normalizedDomain);
-      return {
-        domain: normalizedDomain,
-        seoScore: audit.seoScore,
-        pageSpeedScore: audit.pageSpeedScore,
-        brokenLinksCount: audit.brokenLinksCount,
-        keywordDensity: audit.keywordDensity,
-        technicalIssuesCount: audit.technicalIssues.length,
-      };
+      try {
+        const audit = await createAudit(normalizedDomain);
+        return {
+          domain: normalizedDomain,
+          seoScore: audit.seoScore,
+          pageSpeedScore: audit.pageSpeedScore,
+          brokenLinksCount: audit.brokenLinksCount,
+          keywordDensity: audit.keywordDensity,
+          technicalIssuesCount: audit.technicalIssues.length,
+        };
+      } catch {
+        return {
+          domain: normalizedDomain,
+          seoScore: 0,
+          pageSpeedScore: 0,
+          brokenLinksCount: 0,
+          keywordDensity: [],
+          technicalIssuesCount: 0,
+          error: "Could not audit this competitor",
+        };
+      }
     }),
   );
 
@@ -430,6 +497,10 @@ const createWebsite = asyncHandler(async (req, res) => {
 
   if (!websiteName?.trim() || !normalizedDomain) {
     throw new ApiError(400, "Website name and domain are required");
+  }
+
+  if (!isValidDomain(normalizedDomain)) {
+    throw new ApiError(400, "Enter a valid public domain, for example example.com");
   }
 
   const existingWebsite = await Website.findOne({
@@ -473,6 +544,9 @@ const updateWebsite = asyncHandler(async (req, res) => {
 
   if (domain?.trim()) {
     const normalizedDomain = normalizeDomain(domain);
+    if (!isValidDomain(normalizedDomain)) {
+      throw new ApiError(400, "Enter a valid public domain, for example example.com");
+    }
     const duplicate = await Website.findOne({
       _id: { $ne: websiteId },
       user: req.user._id,
@@ -531,6 +605,7 @@ const runSeoAudit = asyncHandler(async (req, res) => {
 
   const audit = await createAudit(website.domain);
   audit.aiRecommendations = await generateProviderRecommendations(audit, website);
+  const trackedKeywordCount = await Keyword.countDocuments({ website: website._id });
 
   const report = await SEOReport.create({
     website: website._id,
@@ -542,10 +617,15 @@ const runSeoAudit = asyncHandler(async (req, res) => {
   website.seoScore = audit.seoScore;
   website.pageSpeed = audit.pageSpeedScore;
   website.mobileOptimizationScore = audit.mobileFriendly ? 92 : 68;
-  website.domainAuthority = 30 + (audit.seoScore % 45);
-  website.backlinks = 120 + audit.internalLinksCount * 8;
-  website.organicTraffic = 2500 + audit.seoScore * 120;
-  website.keywordsRanked = 80 + audit.externalLinksCount * 12;
+  website.domainAuthority = Math.min(100, Math.round(audit.seoScore * 0.65 + audit.internalLinksCount * 0.4));
+  website.backlinks = audit.externalLinksCount;
+  website.organicTraffic = Math.round(
+    audit.internalLinksCount * 75 +
+      audit.externalLinksCount * 35 +
+      audit.keywordDensity.length * 120 +
+      audit.seoScore * 18,
+  );
+  website.keywordsRanked = trackedKeywordCount;
   website.technicalIssues = audit.technicalIssues.map(({ issue, severity }) => ({
     issue,
     severity,
@@ -645,7 +725,9 @@ const exportSeoReport = asyncHandler(async (req, res) => {
 
     res.setHeader("content-type", "text/csv");
     res.setHeader("content-disposition", `attachment; filename="${website.domain}-seo-report.csv"`);
-    return res.status(200).send(rows.map((row) => row.join(",")).join("\n"));
+    return res
+      .status(200)
+      .send(rows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n"));
   }
 
   if (format === "pdf") {
@@ -671,16 +753,16 @@ const exportSeoReport = asyncHandler(async (req, res) => {
     const latest = reports[0];
     const html = `<!doctype html>
 <html>
-<head><meta charset="utf-8"><title>${website.domain} SEO report</title></head>
+<head><meta charset="utf-8"><title>${escapeHtml(website.domain)} SEO report</title></head>
 <body style="font-family:Arial,sans-serif;margin:40px;color:#101828">
-<h1>${website.websiteName} SEO report</h1>
-<p>${website.domain}</p>
+<h1>${escapeHtml(website.websiteName)} SEO report</h1>
+<p>${escapeHtml(website.domain)}</p>
 <h2>Latest snapshot</h2>
 <p>SEO score: ${latest?.seoScore || 0}/100</p>
 <p>Page speed: ${latest?.pageSpeedScore || 0}/100</p>
 <p>Broken links: ${latest?.brokenLinksCount || 0}</p>
 <h2>Recommendations</h2>
-<ul>${(latest?.aiRecommendations || website.aiRecommendations || []).map((item) => `<li>${item}</li>`).join("")}</ul>
+<ul>${(latest?.aiRecommendations || website.aiRecommendations || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
 <h2>Audit history</h2>
 <table border="1" cellpadding="8" cellspacing="0">
 <tr><th>Date</th><th>SEO</th><th>Speed</th><th>Issues</th></tr>

@@ -15,7 +15,6 @@ export default function Profile({ user }) {
     email: user?.email || "",
     companyName: user?.companyName || "",
     teamName: user?.teamName || "",
-    subscriptionPlan: user?.subscriptionPlan || "free",
     avatar: user?.avatar || "",
   });
   const [passwords, setPasswords] = useState({
@@ -165,22 +164,12 @@ export default function Profile({ user }) {
             ))}
 
             <label className="text-sm font-medium text-[#344054]">
-              Subscription
-              <select
-                name="subscriptionPlan"
-                value={profile.subscriptionPlan}
-                onChange={(event) =>
-                  setProfile((current) => ({
-                    ...current,
-                    subscriptionPlan: event.target.value,
-                  }))
-                }
-                className="mt-2 h-11 w-full rounded-lg border border-[#d0d5dd] px-3 text-sm outline-none"
-              >
-                <option value="free">Free</option>
-                <option value="pro">Pro</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
+              Current plan
+              <input
+                value={user?.subscriptionPlan || "free"}
+                readOnly
+                className="mt-2 h-11 w-full rounded-lg border border-[#d0d5dd] bg-[#f8fafc] px-3 text-sm capitalize text-[#667085] outline-none"
+              />
             </label>
 
             <button
@@ -215,7 +204,7 @@ export default function Profile({ user }) {
           <div className="mt-5 space-y-2">
             {billingHistory.slice(0, 4).map((event) => (
               <p key={event._id} className="text-sm text-[#667085]">
-                {event.plan} · {event.provider} · {event.status}
+                {event.plan} - {event.provider} - {event.status}
               </p>
             ))}
           </div>
@@ -273,7 +262,7 @@ export default function Profile({ user }) {
                 <div className="mt-3 space-y-2">
                   {team.members.map((member) => (
                     <div key={member.email} className="flex items-center justify-between gap-3 text-sm text-[#667085]">
-                      <span>{member.email} · {member.role} · {member.status}</span>
+                      <span>{member.email} - {member.role} - {member.status}</span>
                       {member.role !== "owner" && (
                         <button
                           type="button"

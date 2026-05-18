@@ -51,7 +51,7 @@ export default function Admin() {
                 {overview.recentUsers.map((item) => (
                   <div key={item._id} className="rounded-lg border border-[#e4e7ec] p-4">
                     <p className="font-bold">{item.userName}</p>
-                    <p className="text-sm text-[#667085]">{item.email} · {item.role}</p>
+                    <p className="text-sm text-[#667085]">{item.email} - {item.role}</p>
                   </div>
                 ))}
               </div>
