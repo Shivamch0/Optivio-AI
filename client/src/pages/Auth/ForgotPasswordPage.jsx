@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { requestPasswordReset, resetPassword } from "../../api/auth.api.js";
-
-const getErrorMessage = (error, fallback) =>
-  error?.response?.data?.message || fallback;
+import { getErrorMessage } from "../../utils/dashboard.js";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();

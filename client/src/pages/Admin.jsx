@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAdminOverview } from "../api/admin.api.js";
 import { LoadingPanel } from "../components/common/LoadingState.jsx";
+import { getErrorMessage } from "../utils/dashboard.js";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ export default function Admin() {
         setOverview(res.data);
         setMessage("");
       } catch (error) {
-        setMessage(error?.response?.data?.message || "Admin access required.");
+        setMessage(getErrorMessage(error, "Admin access required."));
       } finally {
         setLoading(false);
       }

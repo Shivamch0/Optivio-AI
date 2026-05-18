@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import GoogleAuthButton from "../Button/GoogleAuthButton";
 import Toast from "../common/Toast";
 import { loginWithGoogle, registerUser } from "../../api/auth.api.js";
+import { getErrorMessage } from "../../utils/dashboard.js";
 
 const validateSignUp = (values) => {
   const errors = {};
@@ -69,8 +70,7 @@ function SignUpForm() {
         navigate("/dashboard");
       } catch (err) {
         setError(
-          err?.response?.data?.message ||
-            "We could not create your account. Please try again.",
+          getErrorMessage(err, "We could not create your account. Please try again."),
         );
       } finally {
         setSubmitting(false);
@@ -84,7 +84,7 @@ function SignUpForm() {
       await loginWithGoogle(idToken);
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || "Google signup is not configured yet.");
+      setError(getErrorMessage(err, err?.message || "Google signup is not configured yet."));
     }
   }, [navigate]);
 

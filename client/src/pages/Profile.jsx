@@ -4,9 +4,7 @@ import { changeDetails, changePassword } from "../api/auth.api.js";
 import { createCheckout, getBillingHistory } from "../api/billing.api.js";
 import { createTeam, getTeams, inviteMember, removeMember } from "../api/team.api.js";
 import { LoadingPanel } from "../components/common/LoadingState.jsx";
-
-const getErrorMessage = (error, fallback) =>
-  error?.response?.data?.message || fallback;
+import { getErrorMessage } from "../utils/dashboard.js";
 
 export default function Profile({ user }) {
   const navigate = useNavigate();

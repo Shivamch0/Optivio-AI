@@ -11,7 +11,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       req.header("Authorization")?.replace("Bearer ", "")
 
     if (!token) {
-      throw new ApiError(401, "Unauthorized request: Token missing...");
+      throw new ApiError(401, "Please log in to continue.");
     }
 
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -24,7 +24,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     );
 
     if (!user) {
-      throw new ApiError(401, "Invalid access token: user not found...");
+      throw new ApiError(401, "Your session is no longer valid. Please log in again.");
     }
 
     req.user = user;
@@ -38,6 +38,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       throw new ApiError(401, "Invalid token. Please log in again.");
     }
 
-    throw new ApiError(401, `Unauthorized. Please log in. ${error}`);
+    throw new ApiError(401, "Please log in to continue.");
   }
 });

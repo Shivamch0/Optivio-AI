@@ -6,8 +6,29 @@ export const emptyWebsiteForm = {
   competitorWebsites: "",
 };
 
-export const getErrorMessage = (error, fallback) =>
-  error?.response?.data?.message || fallback;
+export const getErrorMessage = (error, fallback = "Something went wrong. Please try again.") => {
+  const data = error?.response?.data;
+  const details = Array.isArray(data?.errors)
+    ? data.errors.filter(Boolean)
+    : [];
+
+  if (data?.message && details.length) {
+    const uniqueDetails = [...new Set(details)].filter((item) => item !== data.message);
+    return uniqueDetails.length
+      ? `${data.message} ${uniqueDetails.join(" ")}`
+      : data.message;
+  }
+
+  if (data?.message) return data.message;
+  if (error?.response?.status === 401) return "Your session has expired. Please log in again.";
+  if (error?.response?.status === 403) return "You do not have permission to perform this action.";
+  if (error?.response?.status === 404) return "We could not find what you requested. Please refresh and try again.";
+  if (error?.response?.status >= 500) return "The server is having trouble right now. Please try again in a moment.";
+  if (error?.code === "ERR_NETWORK") return "Could not reach the server. Check your internet connection or API URL.";
+  if (error?.message === "Network Error") return "Could not reach the server. Check your internet connection or API URL.";
+
+  return fallback;
+};
 
 export const formatDate = (value) =>
   value

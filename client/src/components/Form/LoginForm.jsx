@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import GoogleAuthButton from "../Button/GoogleAuthButton";
 import Toast from "../common/Toast";
 import { loginUser, loginWithGoogle } from "../../api/auth.api.js";
+import { getErrorMessage } from "../../utils/dashboard.js";
 
 const validateLogin = (values) => {
   const errors = {};
@@ -50,8 +51,7 @@ function LoginForm() {
         navigate("/dashboard");
       } catch (err) {
         setError(
-          err?.response?.data?.message ||
-            "We could not sign you in. Check your details and try again.",
+          getErrorMessage(err, "We could not sign you in. Check your details and try again."),
         );
       } finally {
         setSubmitting(false);
@@ -65,7 +65,7 @@ function LoginForm() {
       await loginWithGoogle(idToken);
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || "Google login is not configured yet.");
+      setError(getErrorMessage(err, err?.message || "Google login is not configured yet."));
     }
   }, [navigate]);
 
