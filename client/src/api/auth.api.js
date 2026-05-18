@@ -15,11 +15,6 @@ const loginWithGoogle = async (idToken) => {
     return res.data;
 }
 
-const getSsoLogin = async () => {
-    const res = await api.get("/users/sso/login");
-    return res.data;
-}
-
 const logoutUser = async () => {
     const res = await api.post("/users/logout");
     return res.data;
@@ -55,4 +50,4 @@ const changeDetails = async (data) => {
     return res.data
 }
 
-export {registerUser , loginUser , loginWithGoogle, getSsoLogin, logoutUser , refreshToken , getCurrentUser , changeDetails , changePassword, requestPasswordReset, resetPassword}
+export {registerUser , loginUser , loginWithGoogle, logoutUser , refreshToken , getCurrentUser , changeDetails , changePassword, requestPasswordReset, resetPassword}

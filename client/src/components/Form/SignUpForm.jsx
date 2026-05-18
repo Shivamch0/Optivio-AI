@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
-import SocialButton from "../Button/SocialButton";
+import GoogleAuthButton from "../Button/GoogleAuthButton";
 import Toast from "../common/Toast";
-import { getSsoLogin, loginWithGoogle, registerUser } from "../../api/auth.api.js";
+import { loginWithGoogle, registerUser } from "../../api/auth.api.js";
 
 const validateSignUp = (values) => {
   const errors = {};
@@ -78,26 +78,19 @@ function SignUpForm() {
     },
   });
 
-  const handleGoogleLogin = async () => {
-    const idToken = window.prompt("Paste a Google ID token from Google Identity Services");
-    if (!idToken) return;
-
+  const handleGoogleCredential = useCallback(async (idToken) => {
+    setError("");
     try {
       await loginWithGoogle(idToken);
       navigate("/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "Google signup is not configured yet.");
+      setError(err?.response?.data?.message || err?.message || "Google signup is not configured yet.");
     }
-  };
+  }, [navigate]);
 
-  const handleSsoLogin = async () => {
-    try {
-      const res = await getSsoLogin();
-      window.location.href = res.data.url;
-    } catch (err) {
-      setError(err?.response?.data?.message || "SSO signup is not configured yet.");
-    }
-  };
+  const handleGoogleError = useCallback((err) => {
+    setError(err?.message || "Google signup is not configured yet.");
+  }, []);
 
   return (
     <section className="flex min-h-[720px] flex-col justify-between bg-[#f7f8fb] px-6 py-8 sm:px-10 lg:px-12">
@@ -119,9 +112,11 @@ function SignUpForm() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <SocialButton text="Google" icon="G" onClick={handleGoogleLogin} />
-          <SocialButton text="SSO" icon="S" onClick={handleSsoLogin} />
+        <div className="mt-8">
+          <GoogleAuthButton
+            onCredential={handleGoogleCredential}
+            onError={handleGoogleError}
+          />
         </div>
 
         <div className="my-8 flex items-center gap-3">

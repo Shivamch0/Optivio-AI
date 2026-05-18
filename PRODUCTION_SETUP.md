@@ -16,7 +16,7 @@ Optivio AI is now an MVP-grade MERN SaaS with production-ready integration point
 - PDF, CSV, JSON, and HTML report exports.
 - Profile, password change, forgot/reset password.
 - Email-provider hooks for Resend and SendGrid.
-- Google ID-token login endpoint and SSO redirect endpoint.
+- Google Identity Services login flow.
 - Billing checkout foundation with Stripe Checkout support and development mock mode.
 - Team workspaces, invitations, member roles.
 - Admin overview endpoint and admin UI.
@@ -48,8 +48,7 @@ Optional production integrations:
 - `PAGESPEED_API_KEY` for Google PageSpeed.
 - `OPENAI_API_KEY` or `GEMINI_API_KEY` for AI SEO suggestions.
 - `RESEND_API_KEY` or `SENDGRID_API_KEY` for password reset emails.
-- `GOOGLE_CLIENT_ID` for Google ID-token login.
-- `SSO_LOGIN_URL` for external SSO redirect.
+- `GOOGLE_CLIENT_ID` on the server and `VITE_GOOGLE_CLIENT_ID` on the client for Google login.
 - `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `STRIPE_ENTERPRISE_PRICE_ID` for billing.
 
 ## Run Locally
@@ -82,7 +81,6 @@ npm run build
 ## Remaining Real-World Work
 
 - Replace generated keyword metrics with a paid SEO data provider.
-- Add a full Google Identity Services frontend flow instead of developer token paste.
 - Add Stripe webhook handling to finalize subscription state.
 - Send actual team invitation emails.
 - Add frontend unit/integration tests.
