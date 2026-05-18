@@ -8,6 +8,7 @@ const navItems = [
   ["/keywords", "Keywords", "K"],
   ["/competitors", "Competitors", "C"],
   ["/ai-insights", "AI Insights", "AI"],
+  ["/marketing-studio", "Marketing Studio", "MS"],
   ["/notifications", "Notifications", "N"],
   ["/settings", "Settings", "S"],
 ];

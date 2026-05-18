@@ -14,6 +14,7 @@ const Competitors = lazy(() => import("./pages/Competitors"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Keywords = lazy(() => import("./pages/Keywords"));
 const Landing = lazy(() => import("./pages/Landing"));
+const MarketingStudio = lazy(() => import("./pages/MarketingStudio"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -84,6 +85,14 @@ function App() {
           element={
             <ProtectedRoute>
               {(user) => <AIInsights user={user} />}
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/marketing-studio"
+          element={
+            <ProtectedRoute>
+              {(user) => <MarketingStudio user={user} />}
             </ProtectedRoute>
           }
         />

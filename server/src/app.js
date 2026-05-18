@@ -37,6 +37,7 @@ import notificationRoute from "./routes/notification.routes.js";
 import teamRoute from "./routes/team.routes.js";
 import billingRoute from "./routes/billing.routes.js";
 import adminRoute from "./routes/admin.routes.js";
+import campaignRoute from "./routes/campaign.routes.js";
 import errorMiddleware from './middleware/erro.middleware.js';
 
 app.use("/api/v1/users" , userRoute);
@@ -46,6 +47,7 @@ app.use("/api/v1/notifications" , notificationRoute);
 app.use("/api/v1/teams" , teamRoute);
 app.use("/api/v1/billing" , billingRoute);
 app.use("/api/v1/admin" , adminRoute);
+app.use("/api/v1/campaigns" , campaignRoute);
 
 app.use(errorMiddleware);
 
