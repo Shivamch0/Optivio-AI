@@ -43,7 +43,7 @@ export default function Navbar() {
             to="/signup"
             className="h-9 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#1d2939]"
           >
-            Get Started
+            <p className="mt-2">Get Started</p>
           </Link>
         </div>
       </div>
