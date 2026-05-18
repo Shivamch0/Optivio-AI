@@ -1,4 +1,4 @@
-import SearchBar from "./SearchBar";
+
 import DashboardPreview from "./DashboardPreview";
 
 export default function HeroSection() {
@@ -17,7 +17,6 @@ export default function HeroSection() {
           Optivio AI turns website audits, keywords, competitors, and recommendations into a focused SaaS workflow built for real SEO decisions.
         </p>
 
-        <SearchBar />
 
         <div className="mt-6 grid max-w-xl grid-cols-3 gap-3">
           {[
