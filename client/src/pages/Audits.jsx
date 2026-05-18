@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Link } from "react-router-dom";
 import { getReportExportUrl, runSeoAudit } from "../api/website.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
@@ -90,9 +91,24 @@ export default function Audits({ user }) {
             <h2 className="text-lg font-bold">Exports</h2>
             <p className="mt-2 text-sm text-[#667085]">{selectedWebsite?.domain || "Select a website"} report files</p>
             <div className="mt-5 grid gap-3">
-              {["pdf", "csv", "json", "html"].map((format) => (
-                <a key={format} href={selectedWebsiteId ? getReportExportUrl(selectedWebsiteId, format) : "#"} target={format === "json" || format === "html" ? "_blank" : undefined} rel="noreferrer" className={`${buttonLight} flex items-center justify-center uppercase ${!selectedWebsiteId ? "pointer-events-none opacity-50" : ""}`}>{format}</a>
-              ))}
+              {["pdf", "csv", "json", "html"].map((format) =>
+                selectedWebsiteId ? (
+                  <Link
+                    key={format}
+                    to={getReportExportUrl(selectedWebsiteId, format)}
+                    target={format === "json" || format === "html" ? "_blank" : undefined}
+                    rel="noreferrer"
+                    reloadDocument
+                    className={`${buttonLight} flex items-center justify-center uppercase`}
+                  >
+                    {format}
+                  </Link>
+                ) : (
+                  <span key={format} className={`${buttonLight} flex items-center justify-center uppercase opacity-50`}>
+                    {format}
+                  </span>
+                ),
+              )}
             </div>
           </div>
         </section>

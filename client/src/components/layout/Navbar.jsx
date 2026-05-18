@@ -1,60 +1,50 @@
-import {useNavigate} from "react-router-dom"
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
-  const navigate = useNavigate();
   const navItems = [
     { label: "Features", href: "#features" },
     { label: "Analytics", href: "#analytics" },
     { label: "Customers", href: "#customers" },
   ];
 
-  const handleLoginNavigate = () => {
-    navigate("/login")
-  }
-
-  const handleSignUpNavigate = () => {
-    navigate("/signup")
-  };
-
   return (
     <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#d9e0ea] bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
         <div className="flex items-center gap-8">
-          <button type="button" onClick={() => navigate("/")} className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#101828] text-xs font-bold text-white">
               O
             </span>
             <span className="text-lg font-bold">Optivio AI</span>
-          </button>
+          </Link>
 
           <div className="hidden gap-6 md:flex">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.href}
-                href={item.href}
+                to={`/${item.href}`}
                 className="text-sm font-semibold text-[#667085] transition hover:text-[#175cd3]"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleLoginNavigate}
+          <Link
+            to="/login"
             className="text-sm font-semibold text-[#344054] hover:text-[#175cd3]"
           >
             Log In
-          </button>
+          </Link>
 
-          <button
-            type="button"
-            onClick={handleSignUpNavigate}
+          <Link
+            to="/signup"
             className="h-9 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#1d2939]"
           >
             Get Started
-          </button>
+          </Link>
         </div>
       </div>
     </nav>
