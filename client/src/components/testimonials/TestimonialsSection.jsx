@@ -24,7 +24,7 @@ export default function TestimonialsSection() {
   ];
 
   return (
-    <section className="overflow-hidden bg-[#eef2f7] py-14">
+    <section id="customers" className="overflow-hidden bg-[#eef2f7] py-14 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-6">
         <SectionTitle
           title="Trusted by Marketing Leaders"

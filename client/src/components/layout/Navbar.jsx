@@ -2,6 +2,11 @@ import {useNavigate} from "react-router-dom"
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const navItems = [
+    { label: "Features", href: "#features" },
+    { label: "Analytics", href: "#analytics" },
+    { label: "Customers", href: "#customers" },
+  ];
 
   const handleLoginNavigate = () => {
     navigate("/login")
@@ -23,13 +28,13 @@ export default function Navbar() {
           </button>
 
           <div className="hidden gap-6 md:flex">
-            {["Features", "Analytics", "Customers"].map((item) => (
+            {navItems.map((item) => (
               <a
-                key={item}
-                href="#"
+                key={item.href}
+                href={item.href}
                 className="text-sm font-semibold text-[#667085] transition hover:text-[#175cd3]"
               >
-                {item}
+                {item.label}
               </a>
             ))}
           </div>

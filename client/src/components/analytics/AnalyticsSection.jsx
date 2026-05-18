@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import Button from "../common/Button";
 
 export default function AnalyticsSection() {
+  const navigate = useNavigate();
+
   return (
-    <section className="bg-[#101828] py-16">
+    <section id="analytics" className="scroll-mt-20 bg-[#101828] py-16">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 lg:grid-cols-2">
         <div>
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#93c5fd]">
@@ -31,7 +34,7 @@ export default function AnalyticsSection() {
           </div>
 
           <div className="mt-7">
-            <Button>Start Free Analysis</Button>
+            <Button fn={() => navigate("/signup")}>Start Free Analysis</Button>
           </div>
         </div>
 

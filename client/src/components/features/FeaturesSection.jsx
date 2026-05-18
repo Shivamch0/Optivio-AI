@@ -3,7 +3,7 @@ import SectionTitle from "../common/SectionTitle";
 
 export default function FeaturesSection() {
   return (
-    <section className="mx-auto max-w-7xl px-5 py-14">
+    <section id="features" className="mx-auto max-w-7xl scroll-mt-20 px-5 py-14">
       <SectionTitle
         title="Precision SEO Tools"
         subtitle="Everything you need to manage audits, keywords, competitors, and reports without dashboard clutter."
