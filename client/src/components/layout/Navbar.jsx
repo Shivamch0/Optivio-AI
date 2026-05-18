@@ -1,4 +1,3 @@
-import Button from "../common/Button";
 import {useNavigate} from "react-router-dom"
 
 export default function Navbar() {
@@ -13,17 +12,22 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/70 border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-10">
-          <h1 className="text-2xl font-bold">RankPilot AI</h1>
+    <nav className="fixed left-0 right-0 top-0 z-50 border-b border-[#d9e0ea] bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5">
+        <div className="flex items-center gap-8">
+          <button type="button" onClick={() => navigate("/")} className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#101828] text-xs font-bold text-white">
+              O
+            </span>
+            <span className="text-lg font-bold">Optivio AI</span>
+          </button>
 
-          <div className="hidden md:flex gap-6">
-            {["Features", "Solutions","Docs"].map((item) => (
+          <div className="hidden gap-6 md:flex">
+            {["Features", "Analytics", "Customers"].map((item) => (
               <a
                 key={item}
                 href="#"
-                className="text-gray-600 hover:text-purple-700 transition"
+                className="text-sm font-semibold text-[#667085] transition hover:text-[#175cd3]"
               >
                 {item}
               </a>
@@ -31,14 +35,21 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-3">
           <button
-          onClick={handleLoginNavigate}
-           className="text-gray-700 hover:text-purple-700">
+            onClick={handleLoginNavigate}
+            className="text-sm font-semibold text-[#344054] hover:text-[#175cd3]"
+          >
             Log In
           </button>
 
-          <Button fn={handleSignUpNavigate}>Get Started</Button>
+          <button
+            type="button"
+            onClick={handleSignUpNavigate}
+            className="h-9 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white transition hover:bg-[#1d2939]"
+          >
+            Get Started
+          </button>
         </div>
       </div>
     </nav>

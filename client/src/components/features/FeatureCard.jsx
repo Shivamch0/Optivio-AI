@@ -9,28 +9,28 @@ export default function FeatureCard({
   return (
     <div
       className={`
-        rounded-3xl
-        p-8
+        rounded-lg
+        p-5
         border
         transition-all
         hover:shadow-xl
         ${
           dark
-            ? "bg-purple-700 text-white border-purple-700"
+            ? "bg-[#101828] text-white border-[#101828]"
             : "bg-white border-gray-200"
         }
         ${className}
       `}
     >
-      <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center mb-6 text-2xl">
+      <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-lg text-xs font-bold ${dark ? "bg-white/10 text-white" : "bg-[#eff6ff] text-[#175cd3]"}`}>
         {icon}
       </div>
 
-      <h3 className="text-2xl font-bold mb-4">{title}</h3>
+      <h3 className="mb-2 text-xl font-bold">{title}</h3>
 
       <p
-        className={`leading-relaxed ${
-          dark ? "text-purple-100" : "text-gray-600"
+        className={`text-sm leading-6 ${
+          dark ? "text-[#d0d5dd]" : "text-gray-600"
         }`}
       >
         {description}
@@ -40,7 +40,7 @@ export default function FeatureCard({
         <img
           src={image}
           alt={title}
-          className="mt-8 rounded-2xl w-full h-56 object-cover"
+          className="mt-5 h-44 w-full rounded-lg object-cover"
         />
       )}
     </div>

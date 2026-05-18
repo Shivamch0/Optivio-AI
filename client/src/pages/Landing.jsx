@@ -7,10 +7,10 @@ import Footer from "../components/layout/Footer";
 
 export default function LandingPage() {
   return (
-    <div className="bg-[#f7f9fb] text-[#191c1e] overflow-x-hidden">
+    <div className="overflow-x-hidden bg-[#f5f7fb] text-[#101828]">
       <Navbar />
 
-      <main className="pt-24">
+      <main className="pt-14">
         <HeroSection />
         <FeaturesSection />
         <AnalyticsSection />

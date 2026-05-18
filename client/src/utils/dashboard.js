@@ -44,8 +44,8 @@ export const buildTrendData = (reports = []) =>
       issues: report.technicalIssues?.length || 0,
     }));
 
-export const pageShell = "mx-auto w-full max-w-7xl px-5 py-6 lg:px-8";
-export const panel = "rounded-lg border border-[#dde3ee] bg-white p-5 shadow-sm";
+export const pageShell = "mx-auto w-full max-w-7xl px-4 py-4 lg:px-6";
+export const panel = "rounded-lg border border-[#dde3ee] bg-white p-4 shadow-sm";
 export const input =
   "h-11 w-full rounded-lg border border-[#d0d5dd] px-3 text-sm outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15";
 export const buttonDark =

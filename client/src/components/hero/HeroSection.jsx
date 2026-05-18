@@ -3,23 +3,34 @@ import DashboardPreview from "./DashboardPreview";
 
 export default function HeroSection() {
   return (
-    <section className="relative max-w-7xl mx-auto px-6 py-24 lg:py-32 text-center">
-      <div className="max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-semibold mb-8">
-          ✨ Next-Gen SEO Intelligence
+    <section className="mx-auto grid min-h-[calc(100dvh-56px)] max-w-7xl items-center gap-8 px-5 py-10 lg:grid-cols-[0.9fr_1.1fr] lg:py-12">
+      <div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[#bfdbfe] bg-[#eff6ff] px-3 py-1.5 text-xs font-bold uppercase text-[#175cd3]">
+          AI SEO workspace
         </div>
 
-        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight leading-tight mb-8">
-          AI-Powered SEO & Digital Marketing Analytics Platform
+        <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-tight tracking-tight text-[#101828] lg:text-6xl">
+          Audit, track, and improve SEO from one clean dashboard.
         </h1>
 
-        <p className="text-xl text-gray-600 leading-relaxed mb-12 max-w-3xl mx-auto">
-          RankPilot transforms complex data into actionable growth strategies.
-          Dominate search results with real-time analytics and predictive AI
-          insights.
+        <p className="mt-5 max-w-xl text-base leading-7 text-[#667085] lg:text-lg">
+          Optivio AI turns website audits, keywords, competitors, and recommendations into a focused SaaS workflow built for real SEO decisions.
         </p>
 
         <SearchBar />
+
+        <div className="mt-6 grid max-w-xl grid-cols-3 gap-3">
+          {[
+            ["Real audits", "HTML checks"],
+            ["Keyword ideas", "Ranking signals"],
+            ["Exports", "PDF, CSV, HTML"],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-[#dde3ee] bg-white p-3">
+              <p className="text-xs font-bold uppercase text-[#667085]">{label}</p>
+              <p className="mt-1 text-sm font-semibold text-[#344054]">{value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <DashboardPreview />

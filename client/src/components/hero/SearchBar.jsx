@@ -2,11 +2,11 @@ import Button from "../common/Button";
 
 export default function SearchBar() {
   return (
-    <div className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+    <div className="mt-7 flex max-w-xl flex-col gap-3 sm:flex-row">
       <input
         type="text"
         placeholder="Enter your website URL"
-        className="flex-1 px-5 py-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-600"
+        className="h-12 flex-1 rounded-lg border border-[#cfd8e3] px-4 text-sm outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15"
       />
 
       <Button>Analyze Website</Button>

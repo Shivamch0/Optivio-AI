@@ -1,96 +1,64 @@
-
 import Button from "../common/Button";
 
 export default function AnalyticsSection() {
   return (
-    <section className="bg-[#111827] py-28 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-        {/* Left Content */}
+    <section className="bg-[#101828] py-16">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 lg:grid-cols-2">
         <div>
-          <span className="uppercase tracking-[0.2em] text-purple-300 font-semibold text-sm">
-            Engineered for Speed
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#93c5fd]">
+            Built for demo-ready insights
           </span>
 
-          <h2 className="text-5xl lg:text-6xl font-bold text-white leading-tight mt-6">
-            Turn Data into Decisions with AI Recommendations
+          <h2 className="mt-4 max-w-xl text-3xl font-bold leading-tight text-white lg:text-5xl">
+            Move from raw audit data to decisions quickly.
           </h2>
 
-          <p className="text-gray-300 text-lg leading-relaxed mt-8">
-            Our platform doesn’t just show you numbers. It identifies the “Why”
-            behind the “What,” offering specific steps to improve your site
-            health and dominate search rankings.
+          <p className="mt-5 max-w-xl text-base leading-7 text-[#d0d5dd]">
+            Optivio separates websites, reports, keywords, competitors, recommendations, and notifications into clear pages so the product feels scalable without becoming heavy.
           </p>
 
-          <div className="space-y-5 mt-10">
+          <div className="mt-6 grid gap-3">
             {[
-              "Real-time health monitoring and alerts",
-              "Automated backlink toxicity checks",
-              "Predictive ranking fluctuations forecast",
+              "Real audit checks for metadata, headings, images, and links",
+              "Trend charts for SEO score, speed, and issue history",
+              "Readable AI priorities tied to the latest audit",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-4 text-white">
-                <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center text-sm">
-                  ✓
-                </div>
-
-                <p className="text-lg">{item}</p>
+              <div key={item} className="flex items-center gap-3 text-sm font-semibold text-white">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#22c55e]" />
+                {item}
               </div>
             ))}
           </div>
 
-          <div className="mt-10">
+          <div className="mt-7">
             <Button>Start Free Analysis</Button>
           </div>
         </div>
 
-        {/* Right Panel */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-purple-700/20 blur-3xl rounded-full"></div>
+        <div className="rounded-lg border border-white/10 bg-white/5 p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white">AI optimization panel</h3>
+            <span className="rounded-full bg-[#175cd3] px-3 py-1 text-xs font-bold text-white">
+              LIVE
+            </span>
+          </div>
 
-          <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-bold text-white">
-                AI Optimization Panel
-              </h3>
-
-              <span className="bg-purple-600/30 text-purple-200 px-4 py-1 rounded-full text-xs font-bold animate-pulse">
-                LIVE ANALYSIS
-              </span>
+          <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
+            <div className="mb-3 flex justify-between text-sm">
+              <span className="text-[#d0d5dd]">Site health index</span>
+              <span className="font-bold text-[#93c5fd]">88%</span>
             </div>
-
-            {/* Progress */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-              <div className="flex justify-between mb-3">
-                <span className="text-gray-300">Site Health Index</span>
-
-                <span className="text-purple-300 font-bold">88%</span>
-              </div>
-
-              <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full w-[88%] bg-purple-500 rounded-full"></div>
-              </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full w-[88%] rounded-full bg-[#2563eb]" />
             </div>
+          </div>
 
-            {/* Insight Card */}
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-2xl p-6 flex gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center text-2xl">
-                ✨
-              </div>
-
-              <div>
-                <h4 className="text-white font-semibold text-lg mb-2">
-                  Critical Insight Found
-                </h4>
-
-                <p className="text-gray-300 leading-relaxed">
-                  Images on your landing page lack alt-tags. Fixing this could
-                  increase organic image search traffic by up to 22%.
-                </p>
-
-                <button className="mt-4 text-purple-300 hover:text-purple-200 font-semibold">
-                  Apply Auto-Fix →
-                </button>
-              </div>
-            </div>
+          <div className="mt-4 rounded-lg border border-white/10 bg-white p-4">
+            <p className="text-xs font-bold uppercase text-[#667085]">Critical insight</p>
+            <h4 className="mt-2 font-bold text-[#101828]">Image alt coverage is low</h4>
+            <p className="mt-2 text-sm leading-6 text-[#667085]">
+              Add concise alt text to important landing page images to improve accessibility and image SEO.
+            </p>
           </div>
         </div>
       </div>

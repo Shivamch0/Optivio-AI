@@ -117,7 +117,7 @@ export default function Profile({ user }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#eef2f7] px-6 py-8 text-[#101828]">
+    <div className="min-h-dvh bg-[#eef2f7] px-4 py-4 text-[#101828]">
       <main className="mx-auto max-w-4xl">
         <button
           type="button"

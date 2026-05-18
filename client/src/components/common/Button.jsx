@@ -4,17 +4,15 @@ export default function Button({ children, className = "", full = false , fn }) 
     onClick={fn}
       className={`
         ${full ? "w-full" : ""}
-        bg-purple-700
-        hover:bg-purple-800
+        bg-[#101828]
+        hover:bg-[#1d2939]
         text-white
-        px-6
+        px-5
         py-3
-        rounded-xl
+        rounded-lg
         font-semibold
         transition-all
         active:scale-95
-        shadow-md
-        hover:shadow-xl
         ${className}
       `}
     >

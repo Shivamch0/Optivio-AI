@@ -21,9 +21,9 @@ export default function AppLayout({ children, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#eef2f7] text-[#101828] lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-dvh bg-[#eef2f7] text-[#101828] lg:grid lg:grid-cols-[244px_1fr]">
       <aside className="border-b border-[#d9e0ea] bg-white lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
-        <div className="flex h-16 items-center justify-between px-5 lg:h-auto lg:flex-col lg:items-stretch lg:gap-6 lg:py-6">
+        <div className="flex h-14 items-center justify-between px-4 lg:h-auto lg:flex-col lg:items-stretch lg:gap-4 lg:py-5">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#101828] text-sm font-bold text-white">
               O
@@ -39,8 +39,8 @@ export default function AppLayout({ children, user }) {
               <NavLink
                 key={to}
                 to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold ${
+              className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold ${
                     isActive
                       ? "bg-[#e9f1ff] text-[#175cd3]"
                       : "text-[#344054] hover:bg-[#f3f6fb]"
@@ -68,7 +68,7 @@ export default function AppLayout({ children, user }) {
           </nav>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto border-t border-[#edf1f6] px-4 py-3 lg:hidden">
+        <nav className="flex gap-2 overflow-x-auto border-t border-[#edf1f6] px-4 py-2 lg:hidden">
           {navItems.map(([to, label]) => (
             <NavLink
               key={to}

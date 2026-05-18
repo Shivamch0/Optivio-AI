@@ -24,14 +24,14 @@ export default function TestimonialsSection() {
   ];
 
   return (
-    <section className="bg-[#eef2f7] py-28 overflow-hidden">
+    <section className="overflow-hidden bg-[#eef2f7] py-14">
       <div className="max-w-7xl mx-auto px-6">
         <SectionTitle
           title="Trusted by Marketing Leaders"
           subtitle="Thousands of businesses use RankPilot to scale organic growth."
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {testimonials.map((item) => (
             <TestimonialCard key={item.name} {...item} />
           ))}
