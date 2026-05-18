@@ -1,10 +1,93 @@
-﻿## Demo Walkthrough: How To Check Every Feature
+# Optivio AI
 
-### 1. Start the project
+Optivio AI is a MERN SaaS workspace for SEO audits, keyword tracking, competitor checks, AI recommendations, reports, notifications, teams, billing, and account management.
 
-Open two terminals.
+The app uses a Vite React client, an Express API, MongoDB through Mongoose, cookie/JWT authentication, and xAI Grok for generated SEO recommendations. If Grok is not configured or its request fails, audits still complete with local heuristic recommendations.
 
-Server:
+## Features
+
+- User registration, login, logout, refresh tokens, password reset, Google OAuth, and optional SSO redirect.
+- Website workspaces with domain validation and protected ownership checks.
+- SEO audits with metadata checks, heading count, image alt coverage, internal/external links, broken link sampling, PageSpeed metrics, and audit history.
+- Grok-powered recommendations through the xAI API.
+- Keyword analysis and keyword suggestion estimates.
+- Competitor comparison against saved competitor domains.
+- Exportable SEO reports in JSON, CSV, PDF, and printable HTML.
+- Notifications, team invitations, billing checkout hooks, and admin overview.
+- Security headers, request rate limiting, HTTP-only auth cookies, and production-ready CORS configuration.
+
+## Tech Stack
+
+- Frontend: React 19, Vite 8, Tailwind CSS 4, Axios, React Router, Recharts.
+- Backend: Node.js, Express 5, Mongoose 9, JWT, bcrypt.
+- Database: MongoDB.
+- AI provider: xAI Grok chat completions API.
+- Optional services: Google PageSpeed Insights, Google OAuth, Resend or SendGrid, Stripe.
+
+## Project Structure
+
+```text
+Optivio AI/
+  client/        Vite React frontend
+  server/        Express API, models, routes, controllers, services
+  README.md      Project setup and deployment guide
+```
+
+## Prerequisites
+
+- Node.js 20 or newer.
+- npm.
+- MongoDB local instance or MongoDB Atlas connection string.
+- xAI API key for Grok recommendations.
+
+## Environment Setup
+
+Create the server env file:
+
+```bash
+cd server
+cp .env.example .env
+```
+
+Required server variables:
+
+```env
+PORT=5000
+MONGO_URL=mongodb://127.0.0.1:27017
+CORS_ORIGIN=http://localhost:5173
+CLIENT_URL=http://localhost:5173
+ACCESS_TOKEN_SECRET=replace_with_a_long_random_secret
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=replace_with_another_long_random_secret
+REFRESH_TOKEN_EXPIRY=10d
+XAI_API_KEY=your_xai_key
+XAI_MODEL=grok-4.3
+```
+
+Create the client env file:
+
+```bash
+cd client
+cp .env.example .env
+```
+
+Client variables:
+
+```env
+VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=
+```
+
+For deployment, set `CORS_ORIGIN` to the deployed client URL. Multiple origins are supported with commas:
+
+```env
+CORS_ORIGIN=https://your-app.vercel.app,https://www.yourdomain.com
+CLIENT_URL=https://your-app.vercel.app
+```
+
+## Running Locally
+
+Install and start the API:
 
 ```bash
 cd server
@@ -12,7 +95,7 @@ npm install
 npm run dev
 ```
 
-Client:
+Install and start the client:
 
 ```bash
 cd client
@@ -20,558 +103,110 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL, usually:
+Open `http://localhost:5173`.
 
-```text
-http://localhost:5173
+## Scripts
+
+Server:
+
+```bash
+npm run dev      # start API with nodemon
+npm start        # start API for production
+npm test         # run Node test suite
 ```
 
-### 2. Create an account and log in
-
-1. Go to `/signup`.
-2. Register with username, email, password, and company name.
-3. Log in from `/login`.
-4. You should land on the protected SaaS dashboard.
-
-### 3. Check the Dashboard page
-
-Route: `/dashboard`
-
-Verify overview cards, latest audit, quick stats, recent notifications, and charts. Run at least two audits to see the trend graph.
-
-### 4. Check the Websites page
-
-Route: `/websites`
-
-1. Add a valid public domain, for example `example.com`.
-2. Try an invalid URL like `abc` or `localhost`; it should show a validation error.
-3. Edit website name, category, description, and competitors.
-4. Add competitors as comma-separated domains, for example `wikipedia.org, mozilla.org`.
-5. Select a website from the list.
-6. Run an audit from this page.
-7. Delete a test website if needed.
-
-### 5. Check Audit Reports
-
-Route: `/audits`
-
-1. Run an audit.
-2. Confirm real HTML checks are displayed: title tag, meta description, H1 count, image alt coverage, broken links, and technical issues.
-3. Run a second audit to make the trend chart visible.
-4. Test export buttons: PDF, CSV, JSON, and HTML.
-
-### 6. Check Keyword Research
-
-Route: `/keywords`
-
-1. Enter a keyword such as `digital marketing`.
-2. Click Analyze.
-3. Confirm ranking position, search volume, keyword difficulty, CTR, and intent appear.
-4. Click Ideas to generate related keyword suggestions.
-5. Click a suggestion to reuse it.
-6. Delete a keyword to verify cleanup.
-
-### 7. Check Competitor Analysis
-
-Route: `/competitors`
-
-1. First add competitor domains on `/websites`.
-2. Open `/competitors`.
-3. Click Compare.
-4. Confirm the comparison chart shows your site beside competitors.
-5. Confirm side-by-side SEO, speed, and issue metrics appear.
-
-### 8. Check AI Insights
-
-Route: `/ai-insights`
-
-1. Run an audit first.
-2. Open AI Insights.
-3. Confirm optimization priorities are shown.
-4. Confirm content improvement fields use latest audit data.
-5. Confirm technical issues include severity and suggested solution.
-
-### 9. Check Notifications
-
-Route: `/notifications`
-
-1. Run an audit or analyze a keyword.
-2. Confirm a notification is created.
-3. Mark one notification as read.
-4. Mark all as read.
-5. Delete a notification.
-
-### 10. Check Settings and Profile
-
-Routes: `/settings` and `/profile`
-
-1. Update username, email, company, team name, or avatar URL.
-2. Change password.
-3. Open Profile to check billing and team workspace features.
-4. Confirm subscription plan is not directly editable from account settings.
-
-### Demo Notes
-
-- Use valid public domains during viva, for example `example.com`, `wikipedia.org`, or your deployed portfolio domain.
-- Invalid, private, local, and unreachable domains are blocked so the audit fails clearly instead of producing fake-looking results.
-- The dashboard is now only the command center. Full workflows live on their own pages.
-- Audit scoring uses real fetched HTML signals first: title, meta description, headings, image alt coverage, links, page speed fallback, and technical issue detection.
-
----
-# Optivio-AI
-Optivio AI — Project Architecture & Working Documentation
-Project Overview
-
-Optivio AI is a modern AI-powered Digital Marketing & SEO Analytics SaaS platform built using the MERN stack.
-
-The platform helps businesses, marketers, agencies, and website owners analyze and improve their website SEO performance using:
-
-SEO audits
-AI-generated optimization suggestions
-keyword analytics
-competitor analysis
-performance tracking
-analytics dashboards
-
-The application behaves like a lightweight combination of:
-
-SEMrush
-Ahrefs
-UberSuggest
-HubSpot Analytics
-
-The system focuses on:
-
-clean analytics visualization
-AI-powered insights
-multi-website management
-scalable SaaS architecture
-modern dashboard experience
-Core Purpose of the Platform
-
-The main goal of the platform is to:
-
-Analyze websites
-Detect SEO issues
-Generate optimization suggestions
-Track keyword performance
-Compare competitors
-Display analytics visually
-Store historical SEO audit data
-Generate reports
-
-The platform is designed as:
-
-modular
-scalable
-API-driven
-dashboard-oriented
-production-ready
-Main User Flow
-1. Authentication Flow
-
-Users can:
-
-Register
-Login
-Access protected dashboard routes
-
-Authentication uses:
-
-JWT access tokens
-Refresh tokens
-Protected middleware
-Flow
-
-User → Login/Register → JWT Generated → Dashboard Access
-
-2. Website Management Flow
-
-After authentication:
-
-users can add websites
-each website belongs to a specific user
-
-Each website stores:
-
-SEO metrics
-traffic analytics
-backlinks
-keyword data
-AI recommendations
-
-Users can manage multiple websites simultaneously.
-
-3. SEO Analysis Flow
-
-The SEO Analyzer is the core engine of the application.
-
-Input
-
-User submits:
-
-domain URL
-
-Example:
-
-https://example.com
-Analysis Process
-
-The backend:
-
-Fetches website HTML
-Parses content using Cheerio
-Analyzes:
-title tags
-meta descriptions
-headings
-image alt tags
-internal links
-broken links
-keyword density
-Calls external APIs for:
-PageSpeed
-performance metrics
-SEO Score Generation
-
-The platform generates:
-
-overall SEO score
-technical SEO score
-content quality score
-mobile optimization score
-
-Scores are stored in:
-
-Website model
-SEOReport model
-4. AI Recommendation Flow
-
-AI recommendation generation is one of the main platform features.
-
-Input
-
-The AI engine receives:
-
-SEO audit data
-keyword data
-technical issues
-performance metrics
-AI Processing
-
-The backend sends structured prompts to:
-
-OpenAI API
-OR
-Google Gemini API
-
-The AI returns:
-
-SEO optimization suggestions
-content improvements
-keyword recommendations
-technical fixes
-Example AI Output
-- Add meta descriptions to pages
-- Reduce image sizes
-- Improve keyword placement
-- Add internal links
-
-AI recommendations are stored in:
-
-Website model
-SEOReport model
-5. Keyword Research Flow
-
-The Keyword module handles:
-
-keyword suggestions
-search volume
-keyword difficulty
-CPC
-ranking tracking
-keyword trends
-
-The system may use:
-
-external SEO APIs
-OR
-mock/demo data during development
-Keyword Analysis Process
-
-User searches:
-
-digital marketing
-
-The backend returns:
-
-related keywords
-competition level
-search volume
-ranking opportunities
-6. Competitor Analysis Flow
-
-Users can compare:
-
-their website
-competitor websites
-
-The platform compares:
-
-SEO score
-keywords
-backlinks
-traffic estimates
-domain authority
-Competitor Comparison Example
-yourwebsite.com
-vs
-competitor.com
-
-The results are visualized using:
-
-charts
-tables
-comparison cards
-7. Analytics Dashboard Flow
-
-The dashboard aggregates all platform data.
-
-It displays:
-
-SEO trends
-keyword rankings
-backlink growth
-traffic analytics
-AI insights
-notifications
-
-The dashboard behaves like:
-
-real-time SaaS analytics platform
-8. Notifications System
-
-The notification system informs users about:
-
-ranking improvements
-SEO issues
-AI alerts
-audit completions
-broken links
-traffic changes
-
-Notifications support:
-
-priority levels
-read/unread states
-alert categories
-9. Audit History System
-
-Every SEO analysis creates:
-
-a historical SEO report
-
-Users can:
-
-review previous audits
-compare SEO scores over time
-track improvements
-
-This enables:
-
-trend analysis
-historical analytics
-10. Reports System
-
-Users can:
-
-generate PDF reports
-export analytics
-download SEO summaries
-
-Reports include:
-
-SEO scores
-keyword analytics
-AI recommendations
-competitor comparisons
-Frontend Architecture
-Frontend Stack
-React.js
-Tailwind CSS
-React Router
-Axios
-Recharts
-Framer Motion
-Frontend Structure
-frontend/
- ├── components/
- ├── pages/
- ├── layouts/
- ├── routes/
- ├── services/
- ├── hooks/
- ├── context/
- ├── store/
- └── utils/
-Backend Architecture
-Backend Stack
-Node.js
-Express.js
-MongoDB
-Mongoose
-JWT Authentication
-Backend Structure
-backend/
- ├── controllers/
- ├── routes/
- ├── middleware/
- ├── models/
- ├── services/
- ├── utils/
- ├── config/
- └── server.js
-Database Design Philosophy
-
-The database is structured around:
-
-users
-websites
-SEO reports
-keywords
-notifications
-competitors
-
-The architecture supports:
-
-multi-user SaaS scaling
-analytics history
-future AI expansion
-Main Models
-User Model
-
-Stores:
-
-authentication data
-profile data
-subscription data
-Website Model
-
-Stores:
-
-website metrics
-SEO score
-traffic
-backlinks
-SEOReport Model
-
-Stores:
-
-audit history
-technical issues
-AI recommendations
-Keyword Model
-
-Stores:
-
-ranking data
-search volume
-CPC
-trends
-Notification Model
-
-Stores:
-
-alerts
-ranking updates
-AI messages
-UI/UX Philosophy
-
-The platform should feel:
-
-modern
-premium
-futuristic
-enterprise-level
-analytics-focused
-
-The dashboard design should resemble:
-
-Vercel
-Linear
-Stripe Dashboard
-SEMrush
-Security Architecture
-
-The platform uses:
-
-JWT authentication
-password hashing
-protected routes
-refresh tokens
-secure middleware
-Scalability Goals
-
-The architecture is designed to support:
-
-multi-tenant SaaS scaling
-API integrations
-future subscription systems
-AI expansion
-team collaboration
-real-time analytics
-Future Expansion Possibilities
-
-Future versions may include:
-
-real-time SEO monitoring
-AI chatbot assistant
-Google Search Console integration
-Google Analytics integration
-backlink crawler
-automated SEO fixes
-email notifications
-team workspaces
-billing/subscriptions
-multi-language support
-Expected Platform Behavior
-
-The application should behave like:
-
-a professional SaaS analytics platform
-an AI-powered SEO assistant
-a dashboard-first analytics system
-
-The UX should prioritize:
-
-simplicity
-visual analytics
-actionable insights
-smooth navigation
-fast response time
-Development Philosophy
-
-The platform should be:
-
-modular
-maintainable
-scalable
-API-driven
-component-based
-reusable
-
-The codebase should prioritize:
-
-clean architecture
-separation of concerns
-reusable services
-scalable folder structure
-production readiness
-End Goal
-
-The final product should feel like:
-
-a real startup SaaS product
-investor-ready analytics software
-an AI-powered SEO optimization platform
-a scalable enterprise dashboard system
+Client:
+
+```bash
+npm run dev      # start Vite dev server
+npm run build    # create production build
+npm run lint     # run ESLint
+npm run preview  # preview production build
+```
+
+## API Overview
+
+All protected routes use the `/api/v1` prefix and require a valid session cookie or bearer token.
+
+- `POST /users/register`
+- `POST /users/login`
+- `POST /users/logout`
+- `POST /users/refresh-token`
+- `GET /users/current-user`
+- `PATCH /users/change-password`
+- `PATCH /users/update-details`
+- `POST /users/forgot-password`
+- `POST /users/reset-password`
+- `POST /users/oauth/google`
+- `GET /users/sso/login`
+- `GET|POST /websites`
+- `PATCH|DELETE /websites/:websiteId`
+- `GET|POST /websites/:websiteId/audits`
+- `GET /websites/:websiteId/competitors`
+- `GET /websites/:websiteId/export?format=json|csv|pdf|html`
+- `GET|POST /keywords`
+- `GET /keywords/suggestions`
+- `DELETE /keywords/:keywordId`
+- `GET /notifications`
+- `PATCH /notifications/read-all`
+- `PATCH /notifications/:notificationId/read`
+- `DELETE /notifications/:notificationId`
+- `GET|POST /teams`
+- `POST /teams/:teamId/invite`
+- `DELETE /teams/:teamId/members/:email`
+- `POST /billing/checkout`
+- `GET /billing/history`
+- `GET /admin/overview`
+
+## Grok Integration
+
+SEO audits call `server/src/services/grok.service.js` after local audit metrics are collected. The service sends a chat-completions request to `https://api.x.ai/v1/chat/completions` with `XAI_API_KEY` and `XAI_MODEL`.
+
+The response is normalized into four recommendation strings. If the key is missing, the API is unavailable, or the response cannot be parsed, the server falls back to built-in heuristic recommendations so the user workflow does not break.
+
+xAI docs: https://docs.x.ai/developers/model-capabilities/legacy/chat-completions
+
+## Deployment Checklist
+
+1. Create production MongoDB database and set `MONGO_URL`.
+2. Generate long random JWT secrets for `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET`.
+3. Set `NODE_ENV=production`.
+4. Set `CLIENT_URL` and `CORS_ORIGIN` to the deployed frontend URL.
+5. Set `XAI_API_KEY` and choose `XAI_MODEL`.
+6. Configure optional production services:
+   - `PAGESPEED_API_KEY` for Google PageSpeed quota.
+   - `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` for Google login.
+   - `RESEND_API_KEY` or `SENDGRID_API_KEY` for password reset email.
+   - `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, and `STRIPE_ENTERPRISE_PRICE_ID` for real checkout.
+7. Run `npm test` in `server`.
+8. Run `npm run lint` and `npm run build` in `client`.
+9. Deploy the API first, then set `VITE_API_URL` in the client to the API origin.
+
+## Suggested Hosting
+
+- Client: Vercel, Netlify, or Render static site.
+- Server: Render, Railway, Fly.io, or a Node-capable VPS.
+- Database: MongoDB Atlas.
+
+For cookie auth across different domains, the server already sets `secure: true` and `sameSite: "none"` when `NODE_ENV=production`. Make sure the API runs on HTTPS in production.
+
+## Current Production Notes
+
+- The audit engine performs live public website fetches, DNS checks, PageSpeed calls, and a small broken-link sample. Very large sites should eventually move audits to a background queue.
+- Keyword metrics are deterministic estimates, not data from a paid keyword provider.
+- Billing can mock checkout in development. Production should use Stripe price IDs.
+- Admin access depends on a user document with `role: "admin"`.
+- The rate limiter is in-memory, which is fine for a single server instance. For multiple instances, move rate-limit state to Redis or another shared store.
+
+## Verification
+
+Before shipping:
+
+```bash
+cd server
+npm test
+
+cd ../client
+npm run lint
+npm run build
+```

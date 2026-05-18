@@ -9,6 +9,7 @@ import { User } from "../model/user.model.js";
 import { Keyword } from "../model/keyword.model.js";
 import { Notification } from "../model/notification.model.js";
 import { createSimplePdf } from "../services/pdf.service.js";
+import { generateGrokRecommendations } from "../services/grok.service.js";
 
 const normalizeDomain = (domain) => {
   const value = domain?.trim().toLowerCase();
@@ -165,86 +166,8 @@ const fetchPageSpeedMetrics = async (targetUrl) => {
 };
 
 const generateProviderRecommendations = async (audit, website) => {
-  const prompt = `You are an SEO strategist. Return 4 concise, high-impact recommendations for ${website.domain}. Use this JSON audit: ${JSON.stringify({
-    seoScore: audit.seoScore,
-    pageSpeedScore: audit.pageSpeedScore,
-    titleTag: audit.titleTag,
-    metaDescription: audit.metaDescription,
-    h1TagsCount: audit.h1TagsCount,
-    imageAltCoverage: audit.imageAltCoverage,
-    brokenLinksCount: audit.brokenLinksCount,
-    keywordDensity: audit.keywordDensity,
-    technicalIssues: audit.technicalIssues,
-  })}`;
-
-  if (process.env.OPENAI_API_KEY) {
-    try {
-      const response = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-          input: prompt,
-          max_output_tokens: 450,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const text =
-          data.output_text ||
-          data.output
-            ?.flatMap((item) => item.content || [])
-            .map((item) => item.text)
-            .filter(Boolean)
-            .join("\n");
-
-        if (text) {
-          return text
-            .split(/\n|(?<=\.)\s+(?=\d\.|-)/)
-            .map((item) => item.replace(/^[-*\d.\s]+/, "").trim())
-            .filter(Boolean)
-            .slice(0, 4);
-        }
-      }
-    } catch {
-      // Fall back to Gemini or heuristic recommendations.
-    }
-  }
-
-  if (process.env.GEMINI_API_KEY) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-1.5-flash"}:generateContent?key=${process.env.GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-          }),
-        },
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          return text
-            .split(/\n|(?<=\.)\s+(?=\d\.|-)/)
-            .map((item) => item.replace(/^[-*\d.\s]+/, "").trim())
-            .filter(Boolean)
-            .slice(0, 4);
-        }
-      }
-    } catch {
-      // Fall back to heuristic recommendations.
-    }
-  }
-
-  return audit.aiRecommendations;
+  const grokRecommendations = await generateGrokRecommendations({ audit, website });
+  return grokRecommendations.length ? grokRecommendations : audit.aiRecommendations;
 };
 
 const getKeywordDensity = (text) => {

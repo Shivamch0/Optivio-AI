@@ -6,7 +6,10 @@ import cookieParser from 'cookie-parser'
 import { rateLimiter, securityHeaders } from './middleware/security.middleware.js';
 
 const app = express();
-const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:5173";
+const corsOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.set("trust proxy", 1);
 app.use(securityHeaders);
@@ -16,7 +19,7 @@ app.use(rateLimiter({
 }));
 app.use(
   cors({
-    origin: corsOrigin,
+    origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
     credentials: true,
   }),
 );

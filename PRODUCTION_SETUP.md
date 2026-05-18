@@ -9,7 +9,7 @@ Optivio AI is now an MVP-grade MERN SaaS with production-ready integration point
 - Real HTML SEO audit attempt with fallback metrics.
 - Title, meta description, H1, image alt, link, broken-link, and keyword-density analysis.
 - Optional Google PageSpeed integration.
-- Optional OpenAI or Gemini recommendations.
+- Optional xAI Grok recommendations.
 - Keyword tracking and keyword suggestions.
 - Competitor comparison.
 - Notifications API and UI.
@@ -46,7 +46,7 @@ CLIENT_URL=http://localhost:5173
 Optional production integrations:
 
 - `PAGESPEED_API_KEY` for Google PageSpeed.
-- `OPENAI_API_KEY` or `GEMINI_API_KEY` for AI SEO suggestions.
+- `XAI_API_KEY` and optional `XAI_MODEL` for Grok SEO suggestions.
 - `RESEND_API_KEY` or `SENDGRID_API_KEY` for password reset emails.
 - `GOOGLE_CLIENT_ID` on the server and `VITE_GOOGLE_CLIENT_ID` on the client for Google login.
 - `STRIPE_SECRET_KEY`, `STRIPE_PRO_PRICE_ID`, `STRIPE_ENTERPRISE_PRICE_ID` for billing.
