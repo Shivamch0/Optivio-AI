@@ -51,7 +51,6 @@ export default function Settings({ user }) {
                 ["email", "Email"],
                 ["companyName", "Company"],
                 ["teamName", "Team"],
-                ["avatar", "Avatar URL"],
               ].map(([name, label]) => (
                 <label key={name} className="text-sm font-medium text-[#344054]">
                   {label}
