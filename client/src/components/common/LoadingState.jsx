@@ -16,7 +16,7 @@ function LoadingState({
           <div className="relative h-12 w-12 shrink-0">
             <div className="absolute inset-0 rounded-xl bg-[#175cd3]/10" />
             <div className="absolute inset-2 animate-spin rounded-full border-2 border-[#bfdbfe] border-t-[#175cd3]" />
-            <div className="absolute inset-[17px] rounded-full bg-[#175cd3]" />
+            <div className="absolute inset-4.25 rounded-full bg-[#175cd3]" />
           </div>
           <div>
             <p className="text-sm font-bold text-[#101828]">{label}</p>
