@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
 import ProtectedRoute from "./components/routes/ProtectedRoute";
+import { LoadingState } from "./components/common/LoadingState";
 
 const LoginPage = lazy(() => import("./pages/Auth/LoginPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/Auth/ForgotPasswordPage"));
@@ -19,9 +20,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Websites = lazy(() => import("./pages/Websites"));
 
 const PageFallback = () => (
-  <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] text-sm font-semibold text-[#667085]">
-    Loading...
-  </div>
+  <LoadingState label="Loading page" detail="Bringing the Optivio workspace into view..." />
 );
 
 function App() {

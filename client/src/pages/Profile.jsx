@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { changeDetails, changePassword } from "../api/auth.api.js";
 import { createCheckout, getBillingHistory } from "../api/billing.api.js";
 import { createTeam, getTeams, inviteMember, removeMember } from "../api/team.api.js";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 
 const getErrorMessage = (error, fallback) =>
   error?.response?.data?.message || fallback;
@@ -23,6 +24,11 @@ export default function Profile({ user }) {
   });
   const [teams, setTeams] = useState([]);
   const [billingHistory, setBillingHistory] = useState([]);
+  const [loadingWorkspace, setLoadingWorkspace] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [creatingTeam, setCreatingTeam] = useState(false);
+  const [invitingMember, setInvitingMember] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [invite, setInvite] = useState({ teamId: "", email: "", role: "member" });
 
@@ -34,18 +40,22 @@ export default function Profile({ user }) {
       ]);
       if (teamRes.status === "fulfilled") setTeams(teamRes.value.data);
       if (billingRes.status === "fulfilled") setBillingHistory(billingRes.value.data);
+      setLoadingWorkspace(false);
     });
   }, []);
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault();
     setMessage("");
+    setSavingProfile(true);
 
     try {
       await changeDetails(profile);
       setMessage("Profile updated successfully.");
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not update profile."));
+    } finally {
+      setSavingProfile(false);
     }
   };
 
@@ -61,6 +71,7 @@ export default function Profile({ user }) {
   const handleCreateTeam = async (event) => {
     event.preventDefault();
     if (!teamName.trim()) return;
+    setCreatingTeam(true);
 
     try {
       const res = await createTeam(teamName);
@@ -70,12 +81,15 @@ export default function Profile({ user }) {
       setMessage("Team created.");
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not create team."));
+    } finally {
+      setCreatingTeam(false);
     }
   };
 
   const handleInvite = async (event) => {
     event.preventDefault();
     if (!invite.teamId || !invite.email.trim()) return;
+    setInvitingMember(true);
 
     try {
       const res = await inviteMember(invite.teamId, {
@@ -89,6 +103,8 @@ export default function Profile({ user }) {
       setMessage("Invitation saved.");
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not invite member."));
+    } finally {
+      setInvitingMember(false);
     }
   };
 
@@ -106,6 +122,7 @@ export default function Profile({ user }) {
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     setMessage("");
+    setSavingPassword(true);
 
     try {
       await changePassword(passwords);
@@ -113,6 +130,8 @@ export default function Profile({ user }) {
       setMessage("Password changed successfully.");
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not change password."));
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -136,6 +155,12 @@ export default function Profile({ user }) {
           {message && (
             <div className="mt-4 rounded-lg border border-[#d9dde7] bg-[#f8fafc] px-4 py-3 text-sm font-semibold text-[#344054]">
               {message}
+            </div>
+          )}
+
+          {loadingWorkspace && (
+            <div className="mt-5">
+              <LoadingPanel label="Loading profile workspace" detail="Fetching billing history and team information..." />
             </div>
           )}
 
@@ -174,9 +199,10 @@ export default function Profile({ user }) {
 
             <button
               type="submit"
+              disabled={savingProfile}
               className="h-11 rounded-lg bg-[#6d5dfc] px-4 text-sm font-bold text-white sm:col-span-2"
             >
-              Save profile
+              {savingProfile ? "Saving..." : "Save profile"}
             </button>
           </form>
         </section>
@@ -187,7 +213,11 @@ export default function Profile({ user }) {
             Start a provider checkout when Stripe is configured, or use mock checkout in development.
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
-            {["free", "pro", "enterprise"].map((plan) => (
+            {loadingWorkspace ? (
+              <div className="rounded-lg border border-dashed border-[#d0d5dd] p-4 text-sm font-semibold text-[#667085] sm:col-span-3">
+                Loading billing options...
+              </div>
+            ) : ["free", "pro", "enterprise"].map((plan) => (
               <div key={plan} className="rounded-lg border border-[#e4e7ec] p-4">
                 <p className="font-bold capitalize">{plan}</p>
                 <button
@@ -219,8 +249,8 @@ export default function Profile({ user }) {
               placeholder="Growth team"
               className="h-11 min-w-0 flex-1 rounded-lg border border-[#d0d5dd] px-3 text-sm outline-none"
             />
-            <button className="h-11 rounded-lg bg-[#6d5dfc] px-4 text-sm font-bold text-white">
-              Create team
+            <button className="h-11 rounded-lg bg-[#6d5dfc] px-4 text-sm font-bold text-white" disabled={creatingTeam}>
+              {creatingTeam ? "Creating..." : "Create team"}
             </button>
           </form>
 
@@ -250,8 +280,8 @@ export default function Profile({ user }) {
               <option value="member">Member</option>
               <option value="viewer">Viewer</option>
             </select>
-            <button className="h-11 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white">
-              Invite
+            <button className="h-11 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white" disabled={invitingMember}>
+              {invitingMember ? "Inviting..." : "Invite"}
             </button>
           </form>
 
@@ -303,9 +333,10 @@ export default function Profile({ user }) {
             />
             <button
               type="submit"
+              disabled={savingPassword}
               className="h-11 rounded-lg bg-[#101828] px-4 text-sm font-bold text-white sm:col-span-2"
             >
-              Update password
+              {savingPassword ? "Updating..." : "Update password"}
             </button>
           </form>
         </section>

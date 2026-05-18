@@ -1,9 +1,10 @@
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import { pageShell, panel } from "../utils/dashboard.js";
 
 export default function AIInsights({ user }) {
-  const { reports, selectedWebsite } = useWorkspaceData();
+  const { loading, reports, selectedWebsite } = useWorkspaceData();
   const latestReport = reports[0];
   const recommendations =
     latestReport?.aiRecommendations?.length
@@ -17,6 +18,12 @@ export default function AIInsights({ user }) {
         <h1 className="text-3xl font-bold">AI insights</h1>
         <p className="mt-2 text-sm text-[#667085]">AI priorities, optimization suggestions, content improvements, and SEO recommendations.</p>
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading AI insights" detail="Reading the latest audit and recommendation set..." />
+          </div>
+        ) : (
+          <>
         <section className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className={panel}>
             <h2 className="text-lg font-bold">Optimization priorities</h2>
@@ -49,6 +56,8 @@ export default function AIInsights({ user }) {
             </div>
           ))}
         </section>
+          </>
+        )}
       </div>
     </AppLayout>
   );

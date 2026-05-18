@@ -11,20 +11,25 @@ import {
 import { getCompetitorAnalysis } from "../api/website.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import { buttonDark, getErrorMessage, pageShell, panel } from "../utils/dashboard.js";
 
 export default function Competitors({ user }) {
-  const { message, selectedWebsite, selectedWebsiteId, setMessage } = useWorkspaceData();
+  const { loading, message, selectedWebsite, selectedWebsiteId, setMessage } = useWorkspaceData();
   const [analysis, setAnalysis] = useState(null);
+  const [comparing, setComparing] = useState(false);
 
   const handleCompare = async () => {
     if (!selectedWebsiteId) return;
     setMessage("");
+    setComparing(true);
     try {
       const res = await getCompetitorAnalysis(selectedWebsiteId);
       setAnalysis(res.data);
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not run competitor comparison."));
+    } finally {
+      setComparing(false);
     }
   };
 
@@ -48,17 +53,28 @@ export default function Competitors({ user }) {
             <h1 className="text-3xl font-bold">Competitor analysis</h1>
             <p className="mt-2 text-sm text-[#667085]">Compare SEO scores, speed, issue count, and ranking gaps.</p>
           </div>
-          <button type="button" onClick={handleCompare} className={buttonDark} disabled={!selectedWebsite?.competitorWebsites?.length}>Compare</button>
+          <button type="button" onClick={handleCompare} className={buttonDark} disabled={comparing || !selectedWebsite?.competitorWebsites?.length}>
+            {comparing ? "Comparing..." : "Compare"}
+          </button>
         </div>
         {message && <div className="mt-4 rounded-lg border border-[#d9dde7] bg-white px-4 py-3 text-sm font-semibold text-[#344054]">{message}</div>}
-
-        {!selectedWebsite?.competitorWebsites?.length && (
-          <div className={`mt-6 ${panel}`}>
-            <p className="text-sm text-[#667085]">Add competitor domains on the Websites page, then run comparison here.</p>
+        {comparing && (
+          <div className="mt-6">
+            <LoadingPanel label="Comparing competitors" detail="Auditing competitor domains and building the score comparison..." />
           </div>
         )}
 
-        {analysis && (
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading competitors" detail="Checking the selected website and saved competitor domains..." />
+          </div>
+        ) : !selectedWebsite?.competitorWebsites?.length ? (
+          <div className={`mt-6 ${panel}`}>
+            <p className="text-sm text-[#667085]">Add competitor domains on the Websites page, then run comparison here.</p>
+          </div>
+        ) : null}
+
+        {!loading && !comparing && analysis && (
           <>
             <section className={`mt-6 ${panel}`}>
               <h2 className="text-lg font-bold">Side-by-side metrics</h2>

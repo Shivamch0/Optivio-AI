@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAdminOverview } from "../api/admin.api.js";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 
 export default function Admin() {
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
-  const [message, setMessage] = useState("Loading admin overview...");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     Promise.resolve().then(async () => {
@@ -15,6 +17,8 @@ export default function Admin() {
         setMessage("");
       } catch (error) {
         setMessage(error?.response?.data?.message || "Admin access required.");
+      } finally {
+        setLoading(false);
       }
     });
   }, []);
@@ -31,8 +35,13 @@ export default function Admin() {
         </button>
         <section className="rounded-xl border border-[#dde3ee] bg-white p-6 shadow-sm">
           <h1 className="text-3xl font-bold">Admin overview</h1>
+          {loading && (
+            <div className="mt-5">
+              <LoadingPanel label="Loading admin overview" detail="Checking platform totals and recent user activity..." />
+            </div>
+          )}
           {message && <p className="mt-4 text-sm font-semibold text-[#667085]">{message}</p>}
-          {overview && (
+          {!loading && overview && (
             <>
               <div className="mt-6 grid gap-4 sm:grid-cols-4">
                 {[

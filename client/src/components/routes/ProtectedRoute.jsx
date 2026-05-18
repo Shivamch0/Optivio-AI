@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { getCurrentUser, refreshToken } from "../../api/auth.api.js";
+import { LoadingState } from "../common/LoadingState.jsx";
 
 function ProtectedRoute({ children }) {
   const location = useLocation();
@@ -42,14 +43,10 @@ function ProtectedRoute({ children }) {
 
   if (authState.status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#eef2f7] px-6">
-        <div className="rounded-xl border border-[#dde3ee] bg-white p-6 text-center shadow-sm">
-          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[#e4e7ec] border-t-[#6d5dfc]" />
-          <p className="text-sm font-semibold text-[#344054]">
-            Checking your session...
-          </p>
-        </div>
-      </div>
+      <LoadingState
+        label="Checking your session"
+        detail="Verifying your secure workspace access..."
+      />
     );
   }
 

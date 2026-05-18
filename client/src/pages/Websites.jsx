@@ -7,6 +7,7 @@ import {
 } from "../api/website.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import {
   buttonDark,
   buttonLight,
@@ -25,6 +26,7 @@ export default function Websites({ user }) {
     loadNotifications,
     loadWebsiteDetails,
     loadWebsites,
+    loading,
     message,
     selectedWebsite,
     selectedWebsiteId,
@@ -36,6 +38,8 @@ export default function Websites({ user }) {
   } = useWorkspaceData();
   const [form, setForm] = useState(emptyWebsiteForm);
   const [saving, setSaving] = useState(false);
+  const [auditing, setAuditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     Promise.resolve().then(() => {
@@ -94,6 +98,7 @@ export default function Websites({ user }) {
   const handleDelete = async () => {
     if (!selectedWebsiteId) return;
     if (!window.confirm("Delete this website and its audit history?")) return;
+    setDeleting(true);
     try {
       await deleteWebsite(selectedWebsiteId);
       const remaining = websites.filter((website) => website._id !== selectedWebsiteId);
@@ -102,12 +107,15 @@ export default function Websites({ user }) {
       setMessage("Website deleted.");
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not delete website."));
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleAudit = async () => {
     if (!selectedWebsiteId) return;
     setMessage("Running audit.");
+    setAuditing(true);
     try {
       const res = await runSeoAudit(selectedWebsiteId);
       setWebsites((current) =>
@@ -121,6 +129,8 @@ export default function Websites({ user }) {
       loadNotifications();
     } catch (error) {
       setMessage(getErrorMessage(error, "Audit failed. Check the domain and try again."));
+    } finally {
+      setAuditing(false);
     }
   };
 
@@ -131,6 +141,11 @@ export default function Websites({ user }) {
         <p className="mt-2 text-sm text-[#667085]">Add, edit, delete, and select tracked properties.</p>
         {message && <div className="mt-4 rounded-lg border border-[#d9dde7] bg-white px-4 py-3 text-sm font-semibold text-[#344054]">{message}</div>}
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading websites" detail="Finding tracked properties and the latest selected site..." />
+          </div>
+        ) : (
         <section className="mt-6 grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
           <form className={panel} onSubmit={handleCreate}>
             <h2 className="text-lg font-bold">Website manager</h2>
@@ -142,16 +157,24 @@ export default function Websites({ user }) {
               <label className="text-sm font-medium text-[#344054]">Description<textarea name="description" value={form.description} onChange={updateForm} rows={3} className="mt-2 w-full rounded-lg border border-[#d0d5dd] px-3 py-3 text-sm outline-none focus:border-[#2563eb] focus:ring-4 focus:ring-[#2563eb]/15" /></label>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <button className={buttonDark} disabled={saving || !form.websiteName || !form.domain}>Add new</button>
-              <button type="button" onClick={handleUpdate} className={buttonLight} disabled={saving || !selectedWebsiteId}>Update</button>
-              <button type="button" onClick={handleDelete} className={buttonLight} disabled={!selectedWebsiteId}>Delete</button>
+              <button className={buttonDark} disabled={saving || !form.websiteName || !form.domain}>
+                {saving ? "Saving..." : "Add new"}
+              </button>
+              <button type="button" onClick={handleUpdate} className={buttonLight} disabled={saving || !selectedWebsiteId}>
+                {saving ? "Updating..." : "Update"}
+              </button>
+              <button type="button" onClick={handleDelete} className={buttonLight} disabled={deleting || !selectedWebsiteId}>
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </form>
 
           <div className={panel}>
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-lg font-bold">Website list</h2>
-              <button type="button" onClick={handleAudit} className={buttonDark} disabled={!selectedWebsiteId}>Run audit</button>
+              <button type="button" onClick={handleAudit} className={buttonDark} disabled={auditing || !selectedWebsiteId}>
+                {auditing ? "Running..." : "Run audit"}
+              </button>
             </div>
             <div className="mt-5 overflow-hidden rounded-lg border border-[#e4e7ec]">
               {websites.map((website) => (
@@ -175,6 +198,7 @@ export default function Websites({ user }) {
             </div>
           </div>
         </section>
+        )}
       </div>
     </AppLayout>
   );

@@ -7,9 +7,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useState } from "react";
 import { runSeoAudit } from "../api/website.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import {
   buildTrendData,
   buttonDark,
@@ -24,6 +26,7 @@ export default function Dashboard({ user }) {
   const workspace = useWorkspaceData();
   const {
     keywords,
+    loading,
     loadNotifications,
     message,
     notifications,
@@ -39,6 +42,7 @@ export default function Dashboard({ user }) {
   const latestReport = reports[0];
   const trendData = buildTrendData(reports);
   const unreadCount = notifications.filter((item) => !item.isRead).length;
+  const [auditing, setAuditing] = useState(false);
 
   const handleAudit = async () => {
     if (!selectedWebsiteId) {
@@ -47,6 +51,7 @@ export default function Dashboard({ user }) {
     }
 
     setMessage("Running audit. This can take a few seconds.");
+    setAuditing(true);
     try {
       const res = await runSeoAudit(selectedWebsiteId);
       setWebsites((current) =>
@@ -59,6 +64,8 @@ export default function Dashboard({ user }) {
       loadNotifications();
     } catch (error) {
       setMessage(getErrorMessage(error, "Audit failed. Please check the URL and try again."));
+    } finally {
+      setAuditing(false);
     }
   };
 
@@ -80,13 +87,19 @@ export default function Dashboard({ user }) {
               Monitor top SEO health, recent audits, notifications, and performance trends.
             </p>
           </div>
-          <button type="button" onClick={handleAudit} className={buttonDark}>
-            Run latest audit
+          <button type="button" onClick={handleAudit} className={buttonDark} disabled={auditing}>
+            {auditing ? "Running audit..." : "Run latest audit"}
           </button>
         </section>
 
         {message && <div className="mt-4 rounded-lg border border-[#d9dde7] bg-white px-4 py-3 text-sm font-semibold text-[#344054]">{message}</div>}
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading dashboard" detail="Collecting websites, audits, keywords, and notifications..." />
+          </div>
+        ) : (
+          <>
         <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map(([label, value, helper]) => (
             <div key={label} className={panel}>
@@ -168,6 +181,8 @@ export default function Dashboard({ user }) {
             </div>
           </div>
         </section>
+          </>
+        )}
       </div>
     </AppLayout>
   );

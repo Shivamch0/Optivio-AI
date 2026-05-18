@@ -6,6 +6,7 @@ import {
 } from "../api/keyword.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import {
   buttonDark,
   buttonLight,
@@ -18,6 +19,7 @@ import {
 export default function Keywords({ user }) {
   const {
     keywords,
+    loading,
     loadNotifications,
     message,
     selectedWebsiteId,
@@ -26,11 +28,14 @@ export default function Keywords({ user }) {
   } = useWorkspaceData();
   const [keywordInput, setKeywordInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
 
   const handleAnalyze = async (event) => {
     event.preventDefault();
     if (!selectedWebsiteId || !keywordInput.trim()) return;
     setMessage("");
+    setAnalyzing(true);
     try {
       const res = await analyzeKeyword({ websiteId: selectedWebsiteId, keyword: keywordInput });
       setKeywords((current) => [res.data, ...current.filter((item) => item._id !== res.data._id)]);
@@ -39,16 +44,21 @@ export default function Keywords({ user }) {
       loadNotifications();
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not analyze keyword."));
+    } finally {
+      setAnalyzing(false);
     }
   };
 
   const handleIdeas = async () => {
     if (!selectedWebsiteId || !keywordInput.trim()) return;
+    setLoadingIdeas(true);
     try {
       const res = await getKeywordSuggestions(selectedWebsiteId, keywordInput);
       setSuggestions(res.data);
     } catch (error) {
       setMessage(getErrorMessage(error, "Could not load keyword ideas."));
+    } finally {
+      setLoadingIdeas(false);
     }
   };
 
@@ -68,11 +78,21 @@ export default function Keywords({ user }) {
         <p className="mt-2 text-sm text-[#667085]">Track keywords, generate ideas, and review ranking difficulty.</p>
         {message && <div className="mt-4 rounded-lg border border-[#d9dde7] bg-white px-4 py-3 text-sm font-semibold text-[#344054]">{message}</div>}
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading keywords" detail="Fetching tracked terms for the selected website..." />
+          </div>
+        ) : (
+          <>
         <section className={`mt-6 ${panel}`}>
           <form className="grid gap-3 lg:grid-cols-[1fr_auto_auto]" onSubmit={handleAnalyze}>
             <input value={keywordInput} onChange={(event) => setKeywordInput(event.target.value)} className={input} placeholder="digital marketing tools" />
-            <button className={buttonDark} disabled={!selectedWebsiteId || !keywordInput.trim()}>Analyze</button>
-            <button type="button" onClick={handleIdeas} className={buttonLight} disabled={!selectedWebsiteId || !keywordInput.trim()}>Ideas</button>
+            <button className={buttonDark} disabled={analyzing || !selectedWebsiteId || !keywordInput.trim()}>
+              {analyzing ? "Analyzing..." : "Analyze"}
+            </button>
+            <button type="button" onClick={handleIdeas} className={buttonLight} disabled={loadingIdeas || !selectedWebsiteId || !keywordInput.trim()}>
+              {loadingIdeas ? "Loading..." : "Ideas"}
+            </button>
           </form>
 
           {suggestions.length > 0 && (
@@ -110,6 +130,8 @@ export default function Keywords({ user }) {
           ))}
           {!keywords.length && <div className={panel}><p className="text-sm text-[#667085]">No keywords yet. Analyze one to begin tracking.</p></div>}
         </section>
+          </>
+        )}
       </div>
     </AppLayout>
   );

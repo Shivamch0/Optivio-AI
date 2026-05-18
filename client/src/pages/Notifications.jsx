@@ -5,10 +5,11 @@ import {
 } from "../api/notification.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import { buttonLight, formatDate, pageShell, panel } from "../utils/dashboard.js";
 
 export default function Notifications({ user }) {
-  const { notifications, setNotifications } = useWorkspaceData();
+  const { loading, notifications, setNotifications } = useWorkspaceData();
   const unreadCount = notifications.filter((item) => !item.isRead).length;
 
   const markRead = async (notificationId) => {
@@ -39,6 +40,11 @@ export default function Notifications({ user }) {
           <button type="button" onClick={markAllRead} className={buttonLight} disabled={!unreadCount}>Mark all read ({unreadCount})</button>
         </div>
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading notifications" detail="Collecting the latest audit and ranking alerts..." />
+          </div>
+        ) : (
         <section className="mt-6 grid gap-4 lg:grid-cols-3">
           {notifications.map((notification) => (
             <article key={notification._id} className={`${panel} ${notification.isRead ? "" : "ring-2 ring-[#bfdbfe]"}`}>
@@ -58,6 +64,7 @@ export default function Notifications({ user }) {
           ))}
           {!notifications.length && <div className={panel}><p className="text-sm text-[#667085]">No notifications yet.</p></div>}
         </section>
+        )}
       </div>
     </AppLayout>
   );

@@ -7,10 +7,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getReportExportUrl, runSeoAudit } from "../api/website.api.js";
 import { useWorkspaceData } from "../hooks/useWorkspaceData.js";
 import AppLayout from "../layouts/AppLayout.jsx";
+import { LoadingPanel } from "../components/common/LoadingState.jsx";
 import {
   buildTrendData,
   buttonDark,
@@ -25,6 +27,7 @@ import {
 export default function Audits({ user }) {
   const {
     loadNotifications,
+    loading,
     reports,
     selectedWebsite,
     selectedWebsiteId,
@@ -35,6 +38,7 @@ export default function Audits({ user }) {
     websites,
   } = useWorkspaceData();
   const trendData = buildTrendData(reports);
+  const [auditing, setAuditing] = useState(false);
 
   const handleAudit = async () => {
     if (!selectedWebsiteId) {
@@ -42,6 +46,7 @@ export default function Audits({ user }) {
       return;
     }
     setMessage("Running audit.");
+    setAuditing(true);
     try {
       const res = await runSeoAudit(selectedWebsiteId);
       setReports((current) => [res.data.report, ...current]);
@@ -50,6 +55,8 @@ export default function Audits({ user }) {
       loadNotifications();
     } catch (error) {
       setMessage(getErrorMessage(error, "Audit failed. Please check the URL."));
+    } finally {
+      setAuditing(false);
     }
   };
 
@@ -61,10 +68,18 @@ export default function Audits({ user }) {
             <h1 className="text-3xl font-bold">Audit reports</h1>
             <p className="mt-2 text-sm text-[#667085]">Audit history, technical issues, export tools, and score trends.</p>
           </div>
-          <button type="button" onClick={handleAudit} className={buttonDark}>Run audit</button>
+          <button type="button" onClick={handleAudit} className={buttonDark} disabled={auditing}>
+            {auditing ? "Running audit..." : "Run audit"}
+          </button>
         </div>
         {message && <div className="mt-4 rounded-lg border border-[#d9dde7] bg-white px-4 py-3 text-sm font-semibold text-[#344054]">{message}</div>}
 
+        {loading ? (
+          <div className="mt-6">
+            <LoadingPanel label="Loading audits" detail="Preparing audit history, exports, and score trends..." />
+          </div>
+        ) : (
+          <>
         <section className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <div className={panel}>
             <h2 className="text-lg font-bold">SEO score trend</h2>
@@ -143,6 +158,8 @@ export default function Audits({ user }) {
           ))}
           {!reports.length && <div className={panel}><p className="text-sm text-[#667085]">No audit history yet.</p></div>}
         </section>
+          </>
+        )}
       </div>
     </AppLayout>
   );
