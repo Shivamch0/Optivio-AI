@@ -158,6 +158,9 @@ All protected routes use the `/api/v1` prefix and require a valid session cookie
 - `POST /billing/checkout`
 - `GET /billing/history`
 - `GET /admin/overview`
+- `POST /marketing/generate-copy`
+- `GET /marketing/history`
+- `DELETE /marketing/history/:copyId`
 
 ## Grok Integration
 
