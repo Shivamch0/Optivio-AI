@@ -24,6 +24,7 @@ The app uses a Vite React client, an Express API, MongoDB through Mongoose, cook
 - Database: MongoDB.
 - AI provider: xAI Grok chat completions API.
 - Optional services: Google PageSpeed Insights, Google OAuth, Resend or SendGrid, Stripe.
+- AI Marketing: xAI Grok API for ad copy and campaign content generation.
 
 ## Project Structure
 
