@@ -233,6 +233,7 @@ For cookie auth across different domains, the server already sets `secure: true`
 - Billing can mock checkout in development. Production should use Stripe price IDs.
 - Admin access depends on a user document with `role: "admin"`.
 - The rate limiter is in-memory, which is fine for a single server instance. For multiple instances, move rate-limit state to Redis or another shared store.
+- Ad copy generation responses depend on AI availability and may vary based on prompt quality and selected marketing platform.
 
 ## Verification
 
