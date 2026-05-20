@@ -170,6 +170,37 @@ The response is normalized into four recommendation strings. If the key is missi
 
 xAI docs: https://docs.x.ai/developers/model-capabilities/legacy/chat-completions
 
+## Ad Copy Generator
+
+Optivio AI includes an AI-powered Marketing Studio that helps users instantly generate high-converting ad copies for different marketing platforms.
+
+The feature supports:
+- Google Search Ads
+- Facebook Ads
+- Instagram Captions
+- LinkedIn Promotions
+- Email Marketing Campaigns
+- Product Launch Campaigns
+
+Users can enter:
+- Business name
+- Product or service description
+- Target audience
+- Marketing objective
+- Platform selection
+- Tone of writing
+- CTA preference
+
+The AI then generates:
+- Ad headlines
+- Primary ad copy
+- Short descriptions
+- Call-to-action suggestions
+- Hashtags and engagement hooks
+- Multiple content variations
+
+The generator uses xAI Grok for intelligent marketing content creation. If the AI service is unavailable, the system falls back to template-based copy generation so the workflow remains uninterrupted.
+
 ## Deployment Checklist
 
 1. Create production MongoDB database and set `MONGO_URL`.
