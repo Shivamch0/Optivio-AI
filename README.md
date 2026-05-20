@@ -10,6 +10,7 @@ The app uses a Vite React client, an Express API, MongoDB through Mongoose, cook
 - Website workspaces with domain validation and protected ownership checks.
 - SEO audits with metadata checks, heading count, image alt coverage, internal/external links, broken link sampling, PageSpeed metrics, and audit history.
 - Grok-powered recommendations through the xAI API.
+- AI-powered ad copy generation for Google Ads, Facebook, Instagram, LinkedIn, and email campaigns with multiple tone options, CTA suggestions, headline generation, audience targeting hints, and platform-specific optimized marketing content.
 - Keyword analysis and keyword suggestion estimates.
 - Competitor comparison against saved competitor domains.
 - Exportable SEO reports in JSON, CSV, PDF, and printable HTML.
